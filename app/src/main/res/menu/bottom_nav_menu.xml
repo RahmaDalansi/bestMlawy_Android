@@ -1,22 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
         android:id="@+id/nav_collabs"
         android:icon="@drawable/ic_people"
-    android:title="Collabs" />
+        android:title="@string/collabs" />
 
     <item
         android:id="@+id/nav_orders"
         android:icon="@drawable/ic_orders"
-        android:title="Orders" />
+        android:title="@string/orders" />
 
     <item
         android:id="@+id/nav_sales"
         android:icon="@drawable/ic_pin"
-        android:title="Sale's Point" />
+        android:title="@string/sales_point" />
 
     <item
         android:id="@+id/nav_more"
         android:icon="@drawable/ic_menu"
-        android:title="Menu" />
+        android:title="@string/menu" />
+
 </menu>
