@@ -1,4 +1,4 @@
-package com.example.bestmlewi.ui.gallery;
+package com.example.bestmlawi.ui.gallery;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

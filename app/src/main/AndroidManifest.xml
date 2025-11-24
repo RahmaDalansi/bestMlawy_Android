@@ -12,6 +12,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BestMlewi">
         <activity
+            android:name=".ui.employee.Suppression"
+            android:exported="false" />
+        <activity
+            android:name=".ui.employee.Modification"
+            android:exported="false" />
+        <activity
+            android:name=".ui.employee.Ajout"
+            android:exported="false" />
+        <activity
+            android:name=".ui.employee.Consultation"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

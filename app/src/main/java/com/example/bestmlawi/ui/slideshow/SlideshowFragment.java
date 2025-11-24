@@ -1,4 +1,4 @@
-package com.example.bestmlewi.ui.slideshow;
+package com.example.bestmlawi.ui.slideshow;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.bestmlewi.databinding.FragmentSlideshowBinding;
+import com.example.bestmlawi.databinding.FragmentSlideshowBinding;
 
 public class SlideshowFragment extends Fragment {
 

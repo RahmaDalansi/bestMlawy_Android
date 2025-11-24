@@ -1,10 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.employee.Modification">
+    android:padding="24dp"
+    android:background="#FFFFFF">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Modifier Employé"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Employee Info -->
+        <TextView
+            android:id="@+id/txtEmployeeInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Modification de l'employé"
+            android:textSize="16sp"
+            android:textColor="#673AB7"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nom"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/edtName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Entrez le nom"
+            android:background="@drawable/edittext_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <!-- Email -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Entrez l'email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/edittext_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <!-- Phone -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Téléphone"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/edtPhone"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Entrez le téléphone"
+            android:inputType="phone"
+            android:background="@drawable/edittext_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <!-- Location -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Localisation"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/edtLocation"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Entrez la localisation"
+            android:background="@drawable/edittext_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <!-- Role -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rôle"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="12dp" />
+
+        <RadioGroup
+            android:id="@+id/rgRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="32dp">
+
+            <RadioButton
+                android:id="@+id/rbCollaborator"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Collaborator"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:buttonTint="#673AB7" />
+
+            <RadioButton
+                android:id="@+id/rbCoordinator"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Coordinator"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:buttonTint="#673AB7" />
+
+            <RadioButton
+                android:id="@+id/rbDeliver"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Deliver"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:buttonTint="#673AB7" />
+
+        </RadioGroup>
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnRetour"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Retour"
+                android:backgroundTint="#9E9E9E"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btnModifier"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Modifier"
+                android:backgroundTint="#673AB7"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp"
+                android:textAllCaps="false" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,13 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace 'com.example.bestmlewi'
+    namespace 'com.example.bestmlawi'
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.example.bestmlewi"
+        applicationId "com.example.bestmlawi"
         minSdk 24
         targetSdk 36
         versionCode 1
@@ -46,7 +47,12 @@ dependencies {
     implementation libs.lifecycle.viewmodel.ktx
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
+    implementation libs.firebase.firestore
+    implementation libs.activity
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
+    implementation("com.google.firebase:firebase-firestore")
+
 }

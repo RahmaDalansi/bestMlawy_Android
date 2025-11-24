@@ -1,4 +1,4 @@
-package com.example.bestmlewi.ui.home;
+package com.example.bestmlawi.ui.home;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.bestmlewi.databinding.FragmentHomeBinding;
+import com.example.bestmlawi.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
 

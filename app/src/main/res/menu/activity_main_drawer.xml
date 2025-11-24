@@ -16,5 +16,11 @@
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
+
+        <!-- Employee -->
+        <item
+            android:id="@+id/nav_employee"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="Employees" />
     </group>
 </menu>

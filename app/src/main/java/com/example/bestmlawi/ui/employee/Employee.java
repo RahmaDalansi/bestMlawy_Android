@@ -1,4 +1,4 @@
-package com.example.bestmlewi.ui.employee;
+package com.example.bestmlawi.ui.employee;
 
 import java.util.Date;
 
@@ -55,6 +55,6 @@ public class Employee {
 
     @Override
     public String toString() {
-        return name + " - " + role + (location != null ? " (" + location + ")" : "");
+        return name + " - " + role + (location != null && !location.isEmpty() ? " (" + location + ")" : "");
     }
 }

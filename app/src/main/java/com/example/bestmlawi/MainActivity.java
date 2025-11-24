@@ -1,4 +1,4 @@
-package com.example.bestmlewi;
+package com.example.bestmlawi;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,8 +15,8 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.bestmlewi.databinding.ActivityMainBinding;
-import com.example.bestmlewi.ui.employee.Consultation;
+import com.example.bestmlawi.databinding.ActivityMainBinding;
+import com.example.bestmlawi.ui.employee.Consultation;
 
 public class MainActivity extends AppCompatActivity {
 
