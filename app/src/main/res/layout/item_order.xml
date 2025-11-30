@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="8dp"
+    android:layout_margin="8dp">
+
+    <!-- Informations de la commande -->
+    <TextView
+        android:id="@+id/txtOrderInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:lineSpacingExtra="4dp"
+        android:paddingBottom="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#F9F9F9"
+        android:padding="12dp"
+        android:elevation="1dp" />
+
+    <!-- Boutons d'action -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp">
+
+        <Button
+            android:id="@+id/btnViewDetail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="View Detail"
+            android:textColor="#D32F2F"
+            android:backgroundTint="#FFFFFF"
+            android:strokeColor="#D32F2F"
+            android:strokeWidth="2"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Cancel"
+            android:textColor="#000000"
+            android:backgroundTint="#FFFFFF"
+            android:strokeColor="#CCCCCC"
+            android:strokeWidth="2"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnAccept"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Accept"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#D32F2F"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:animateLayoutChanges="true">
+
+        <!-- Titre principal -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter Orders"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#D32F2F"
+            android:layout_marginBottom="28dp"
+            android:fontFamily="sans-serif-medium" />
+
+        <!-- Section Statut -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFF3F3"
+            app:cardPreventCornerOverlap="true"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#C62828"
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="4"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/statusPlaced"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:text="Placed"
+                        android:textColor="#FFFFFF"
+                        android:background="#FFA000"
+                        android:gravity="center"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_margin="3dp"
+                        android:paddingHorizontal="4dp"
+                        android:elevation="1dp"
+                        android:outlineAmbientShadowColor="#FFA000"
+                        android:outlineSpotShadowColor="#FFA000" />
+
+                    <TextView
+                        android:id="@+id/statusPreparing"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:text="Preparing"
+                        android:textColor="#D32F2F"
+                        android:background="#FFEBEE"
+                        android:gravity="center"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_margin="3dp"
+                        android:paddingHorizontal="4dp" />
+
+                    <TextView
+                        android:id="@+id/statusOnWay"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:text="On Way"
+                        android:textColor="#D32F2F"
+                        android:background="#FFEBEE"
+                        android:gravity="center"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_margin="3dp"
+                        android:paddingHorizontal="4dp" />
+
+                    <TextView
+                        android:id="@+id/statusDelivered"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:text="Delivered"
+                        android:textColor="#FFFFFF"
+                        android:background="#4CAF50"
+                        android:gravity="center"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_margin="3dp"
+                        android:paddingHorizontal="4dp"
+                        android:elevation="1dp" />
+
+                    <TextView
+                        android:id="@+id/statusCanceled"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:text="Canceled"
+                        android:textColor="#D32F2F"
+                        android:background="#FFEBEE"
+                        android:gravity="center"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_margin="3dp"
+                        android:paddingHorizontal="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section Prix -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FDF8F8"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Price Range"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#C62828"
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Minimum"
+                        android:textSize="14sp"
+                        android:textColor="#666666"
+                        android:layout_marginBottom="6dp" />
+
+                    <SeekBar
+                        android:id="@+id/seekPriceMin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="1000"
+                        android:progress="100"
+                        android:progressTint="#D32F2F"
+                        android:thumbTint="#D32F2F"
+                        android:thumbTextPadding="4dp"
+                        android:layout_marginBottom="16dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Maximum"
+                        android:textSize="14sp"
+                        android:textColor="#666666"
+                        android:layout_marginBottom="6dp" />
+
+                    <SeekBar
+                        android:id="@+id/seekPriceMax"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="1000"
+                        android:progress="800"
+                        android:progressTint="#D32F2F"
+                        android:thumbTint="#D32F2F"
+                        android:thumbTextPadding="4dp"
+                        android:layout_marginBottom="12dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtPriceRange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="€100 - €800"
+                    android:textSize="15sp"
+                    android:textColor="#D32F2F"
+                    android:textStyle="bold"
+                    android:layout_gravity="end"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section Points de vente -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FAF3F3"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sales' Points"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#C62828"
+                    android:layout_marginBottom="18dp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <!-- Point 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Point A"
+                        android:textSize="15sp"
+                        android:textColor="#333333"
+                        android:fontFamily="sans-serif" />
+
+                    <RadioGroup
+                        android:id="@+id/rgSalesPoint1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/radioAll1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="All"
+                            android:textSize="12sp"
+                            android:buttonTint="#D32F2F"
+                            android:layout_marginStart="8dp" />
+
+                        <RadioButton
+                            android:id="@+id/radioAvailable1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Yes"
+                            android:textSize="12sp"
+                            android:buttonTint="#D32F2F"
+                            android:layout_marginStart="8dp" />
+
+                        <RadioButton
+                            android:id="@+id/radioUnavailable1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No"
+                            android:textSize="12sp"
+                            android:buttonTint="#D32F2F"
+                            android:layout_marginStart="8dp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <!-- Point 2 -->
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bouton Apply -->
+        <Button
+            android:id="@+id/btnApply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply Filters"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#D32F2F"
+            android:layout_marginTop="16dp"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="0dp"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:elevation="6dp"
+            android:stateListAnimator="@null"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.05" />
+
+    </LinearLayout>
+</ScrollView>

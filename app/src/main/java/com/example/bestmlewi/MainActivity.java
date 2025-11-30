@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
 
+import com.example.bestmlawi.ui.orders.Consultation_orders;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -37,19 +38,57 @@ public class MainActivity extends AppCompatActivity {
                         .setAnchorView(R.id.fab).show();
             }
         });
+
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
+<<<<<<< Updated upstream:app/src/main/java/com/example/bestmlewi/MainActivity.java
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+=======
+
+        // Configuration du AppBar (inclut nav_employee)
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_home,
+                R.id.nav_gallery,
+                R.id.nav_slideshow,
+                R.id.nav_employee,
+                R.id.nav_orders)  // Ajouté pour Orders
+>>>>>>> Stashed changes:app/src/main/java/com/example/bestmlawi/MainActivity.java
                 .setOpenableLayout(drawer)
                 .build();
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+<<<<<<< Updated upstream:app/src/main/java/com/example/bestmlewi/MainActivity.java
+=======
+
+        // Gestion personnalisée des clics sur le menu
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_employee) {
+                Intent intent = new Intent(MainActivity.this, Consultation.class);
+                startActivity(intent);
+                drawer.closeDrawers();
+                return true;
+            } else if (itemId == R.id.nav_orders) {
+                Intent intent = new Intent(MainActivity.this, Consultation_orders.class);
+                startActivity(intent);
+                drawer.closeDrawers();
+                return true;
+            }
+
+            // Pour les autres items, laisse NavController gérer
+            return NavigationUI.onNavDestinationSelected(item, navController)
+                    || super.onOptionsItemSelected(item);
+        });
+>>>>>>> Stashed changes:app/src/main/java/com/example/bestmlawi/MainActivity.java
     }
 
+    // ✅ Méthode déplacée ici — à l’extérieur de onCreate()
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

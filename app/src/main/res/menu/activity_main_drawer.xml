@@ -16,5 +16,20 @@
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
+<<<<<<< Updated upstream
+=======
+
+        <!-- Employee -->
+        <item
+            android:id="@+id/nav_employee"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="Employees" />
+
+        <!-- Orders -->
+        <item
+            android:id="@+id/nav_orders"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="Orders" />
+>>>>>>> Stashed changes
     </group>
 </menu>
