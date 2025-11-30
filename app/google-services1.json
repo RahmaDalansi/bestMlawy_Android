@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "379800016006-maiqh69fp0co990417qb403s41j3a6n0.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.bestmlawi",
-            "certificate_hash": "e5f9fc2c017394e068ca3ef51f521b78aa3701e0"
-          }
-        },
-        {
           "client_id": "379800016006-rdjvs19c972epklham2ghvv644iqam8t.apps.googleusercontent.com",
           "client_type": 3
         }
