@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
+    <!-- Barre de titre rouge avec bouton QR -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,24 +17,30 @@
         <TextView
             android:id="@+id/txtTitle"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Orders List"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:layout_marginEnd="16dp" />
 
+        <!-- Bouton QR Code (remplace <item>) -->
         <ImageView
+            android:id="@+id/imgScanQr"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_info_details"
+            android:src="@drawable/ic_qr_code"
             android:background="@drawable/rounded_white_bg"
-            android:padding="4dp"
+            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:contentDescription="User Profile" />
+            android:contentDescription="Scanner un code QR"
+            android:clickable="true"
+            android:focusable="true"
+             />
     </LinearLayout>
 
+    <!-- Barre de recherche -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,6 +87,7 @@
             android:focusable="true" />
     </LinearLayout>
 
+    <!-- Lien vers filtres -->
     <TextView
         android:id="@+id/txtOpenFilters"
         android:layout_width="wrap_content"
@@ -98,6 +106,7 @@
         android:clickable="true"
         android:focusable="true" />
 
+    <!-- Liste des commandes -->
     <ListView
         android:id="@+id/lstOrders"
         android:layout_width="match_parent"

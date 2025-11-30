@@ -1,8 +1,10 @@
 package com.example.bestmlawi.ui.orders;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.bestmlawi.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,6 +26,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -29,16 +34,26 @@ import java.util.Map;
 
 // ✅ Imports nécessaires
 import com.example.bestmlawi.ui.orders.Order;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+
 import android.util.Log;
 
 public class Consultation_orders extends Activity {
 
+    private ImageView QRcodeImage;
     private ListView lstOrders;
     private TextView txtTitle, txtOpenFilters;
     private EditText edtSearch;
+    private boolean isScanning = false; // ✅ Champ de classe → accessible partout
+
 
     private ArrayAdapter<String> adpOrders;
     private FirebaseFirestore db;
+    private GmsBarcodeScanner scanner;
+
     private List<Order> orderList = new ArrayList<>();
     private List<String> orderStringList = new ArrayList<>();
 
@@ -66,6 +81,7 @@ public class Consultation_orders extends Activity {
         txtTitle = findViewById(R.id.txtTitle);
         txtOpenFilters = findViewById(R.id.txtOpenFilters);
         edtSearch = findViewById(R.id.edtSearch);
+        QRcodeImage = findViewById(R.id.imgScanQr);
 
         orderStringList = new ArrayList<>();
         adpOrders = new ArrayAdapter<>(this, 0, orderStringList) {
@@ -115,6 +131,8 @@ public class Consultation_orders extends Activity {
         };
         lstOrders.setAdapter(adpOrders);
         db = FirebaseFirestore.getInstance();
+        initBarcodeScanner();
+
     }
 
     private void ecouteurs() {
@@ -122,6 +140,14 @@ public class Consultation_orders extends Activity {
             Intent intent = new Intent(this, FilterOrdersActivity.class);
             startActivityForResult(intent, 1002);
         });
+        QRcodeImage.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onScanQRCode();
+                    }
+                }
+        );
     }
 
     private void ecouteursRecherche() {
@@ -395,6 +421,7 @@ public class Consultation_orders extends Activity {
                         orderStringList.clear();
 
                         for (QueryDocumentSnapshot doc : task.getResult()) {
+                            System.out.println(doc.getData());
                             Order order = doc.toObject(Order.class);
                             order.setId(doc.getId());
                             orderList.add(order);
@@ -471,5 +498,68 @@ public class Consultation_orders extends Activity {
             // Ne pas utiliser min/max price ici (pas de totalAmount dans Order)
             filtrerOrders(); // 🔥 Appliquer immédiatement les filtres
         }
+    }
+
+    private void initBarcodeScanner() {
+        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(
+                        Barcode.FORMAT_QR_CODE,
+                        Barcode.FORMAT_AZTEC)
+                .enableAutoZoom()
+                .build();
+
+        scanner = GmsBarcodeScanning.getClient(this, options);
+
+    }
+
+    private void scanQrCode() {
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    if (barcode == null) {
+                        Toast.makeText(this, "Aucun code détecté", Toast.LENGTH_SHORT).show();
+                        isScanning = false;
+                        return;
+                    }
+
+                    String rawValue = barcode.getRawValue();
+                    if (rawValue == null || rawValue.trim().isEmpty()) {
+                        Toast.makeText(this, "Code vide ou invalide", Toast.LENGTH_SHORT).show();
+                        isScanning = false;
+                        return;
+                    }
+
+                    // ✅ Tout est bon → continuez la logique
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("status", "Livré");
+                    db.collection("orders").document(rawValue).update(data)
+                            .addOnSuccessListener(aVoid ->
+                                    Toast.makeText(this, "✅ Commande marquée comme livrée", Toast.LENGTH_LONG).show())
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Erreur mise à jour : " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+                    isScanning = false;
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("aaaaaaaaa");
+                    System.out.println(e.getMessage());
+                    System.out.println(e.getCause());
+                    System.out.println(Arrays.toString(e.getStackTrace()));
+                    Toast.makeText(this, "Scan échoué : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    public boolean onScanQRCode() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // 📣 Demande la permission si non accordée
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, 1001);
+        } else {
+            // ✅ Permission déjà accordée → lance directement le scan
+            scanQrCode();
+        }
+        return true;
+
     }
 }

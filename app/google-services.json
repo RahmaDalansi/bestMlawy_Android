@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "379800016006",
+    "project_id": "bestmlawi-6317c",
+    "storage_bucket": "bestmlawi-6317c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379800016006:android:4763132fd12b31ee3fad07",
+        "android_client_info": {
+          "package_name": "com.example.bestmlawi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "379800016006-rdjvs19c972epklham2ghvv644iqam8t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuUQU_3MqfpQyx1gu-oFki3IWnGJfTxWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "379800016006-rdjvs19c972epklham2ghvv644iqam8t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "379800016006-g51dlqhok92lboq0b1cvvtutu3li8k7r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bestmlawi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="txtDeleteTitle" type="id" />
+    <item name="txtDeleteMessage" type="id" />
+    <item name="btnCancelDelete" type="id" />
+    <item name="btnConfirmDelete" type="id" />
+</resources>

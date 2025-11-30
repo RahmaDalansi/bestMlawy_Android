@@ -10,11 +10,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.bestmlewi.databinding.FragmentSlideshowBinding;
+import com.example.bestmlawi.databinding.FragmentSlideshowBinding;
+
 
 public class SlideshowFragment extends Fragment {
 
-    private FragmentSlideshowBinding binding;
+    private com.example.bestmlawi.databinding.FragmentSlideshowBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
