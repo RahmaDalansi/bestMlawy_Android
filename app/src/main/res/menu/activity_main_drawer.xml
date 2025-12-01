@@ -4,23 +4,41 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+
+        <!-- Dashboard -->
         <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="@string/menu_home" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="@string/menu_gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="@string/menu_slideshow" />
+            android:id="@+id/nav_dashbord"
+            android:icon="@android:drawable/ic_menu_view"
+            android:title="Dashboard" />
 
         <!-- Employee -->
         <item
             android:id="@+id/nav_employee"
-            android:icon="@android:drawable/ic_menu_manage"
+            android:icon="@android:drawable/ic_menu_my_calendar"
             android:title="Employees" />
+
+        <!-- Orders -->
+        <item
+            android:id="@+id/nav_orders"
+            android:icon="@android:drawable/ic_menu_sort_by_size"
+            android:title="Orders" />
+
+        <!-- Sales Points -->
+        <item
+            android:id="@+id/nav_salespoints"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="Sales Points" />
+
+        <!-- Menu -->
+        <item
+            android:id="@+id/nav_menu"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="Menu" />
+
+        <!-- Profile -->
+        <item
+            android:id="@+id/nav_profil"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Profile" />
     </group>
 </menu>

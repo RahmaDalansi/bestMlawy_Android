@@ -11,7 +11,8 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
 
-    <string name="collabs">Collabs</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="employees">Employees</string>
     <string name="orders">Orders</string>
     <string name="sales_point">Sales Point</string>
     <string name="menu">Menu</string>

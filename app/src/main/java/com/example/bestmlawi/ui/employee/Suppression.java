@@ -1,4 +1,4 @@
-/*
+
 package com.example.bestmlawi.ui.employee;
 
 import android.app.Activity;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Suppression extends Activity {
-    private Spinner spEmployee;
+    /*private Spinner spEmployee;
     private Button btnSupprimer;
     private Button btnRetour;
     private ArrayAdapter<Employee> adpEmployee;
@@ -131,7 +131,6 @@ public class Suppression extends Activity {
         } else {
             Toast.makeText(getApplicationContext(), "Veuillez sélectionner un employé", Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 }
 
-*/

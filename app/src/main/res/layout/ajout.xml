@@ -2,24 +2,40 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="#FFFFFF">
+    android:padding="16dp"
+    android:background="#f5f5f5">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header -->
-        <TextView
+        <!-- Profile Image Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Collaborator"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#000000"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@drawable/circle_background"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person_placeholder" />
+
+            <Button
+                android:id="@+id/btnSelectImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Image"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_background_red"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
 
         <!-- Name -->
         <TextView
@@ -27,20 +43,16 @@
             android:layout_height="wrap_content"
             android:text="Name"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
 
         <EditText
             android:id="@+id/edtName"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="place holder"
             android:background="@drawable/edittext_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="24dp"
-            android:textColor="#000000"
-            android:textSize="16sp" />
+            android:padding="12dp" />
 
         <!-- Phone Number -->
         <TextView
@@ -48,21 +60,18 @@
             android:layout_height="wrap_content"
             android:text="Phone Number"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
 
         <EditText
             android:id="@+id/edtPhone"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="place holder"
             android:inputType="phone"
             android:background="@drawable/edittext_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="24dp"
-            android:textColor="#000000"
-            android:textSize="16sp" />
+            android:padding="12dp" />
 
         <!-- Email -->
         <TextView
@@ -70,21 +79,18 @@
             android:layout_height="wrap_content"
             android:text="Email"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
 
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="place holder"
             android:inputType="textEmailAddress"
             android:background="@drawable/edittext_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="24dp"
-            android:textColor="#000000"
-            android:textSize="16sp" />
+            android:padding="12dp" />
 
         <!-- Address -->
         <TextView
@@ -92,68 +98,56 @@
             android:layout_height="wrap_content"
             android:text="Address"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
 
         <EditText
             android:id="@+id/edtAddress"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="place holder"
             android:background="@drawable/edittext_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="24dp"
-            android:textColor="#000000"
-            android:textSize="16sp" />
+            android:padding="12dp" />
 
-        <!-- Role -->
+        <!-- Role Section -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Role"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="12dp" />
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
 
-        <RadioGroup
-            android:id="@+id/rgRole"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
+            android:weightSum="3">
 
-            <RadioButton
-                android:id="@+id/rbCollaborator"
+            <CheckBox
+                android:id="@+id/cbCollaborator"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Collaborator"
-                android:textSize="16sp"
-                android:textColor="#000000"
-                android:buttonTint="#673AB7" />
+                android:text="Collaborator" />
 
-            <RadioButton
-                android:id="@+id/rbCoordinator"
+            <CheckBox
+                android:id="@+id/cbCoordinator"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Coordinator"
-                android:textSize="16sp"
-                android:textColor="#000000"
-                android:buttonTint="#673AB7" />
+                android:text="Coordinator" />
 
-            <RadioButton
-                android:id="@+id/rbDeliver"
+            <CheckBox
+                android:id="@+id/cbDeliver"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Deliver"
-                android:textSize="16sp"
-                android:textColor="#000000"
-                android:buttonTint="#673AB7" />
+                android:text="Deliver" />
 
-        </RadioGroup>
+        </LinearLayout>
 
         <!-- Work Location -->
         <TextView
@@ -161,51 +155,45 @@
             android:layout_height="wrap_content"
             android:text="Work Location"
             android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
 
         <EditText
             android:id="@+id/edtWorkLocation"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="place holder"
             android:background="@drawable/edittext_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_marginBottom="32dp"
-            android:textColor="#000000"
-            android:textSize="16sp" />
+            android:padding="12dp" />
 
         <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2"
+            android:layout_marginTop="32dp">
 
             <Button
                 android:id="@+id/btnRetour"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Cancel"
-                android:backgroundTint="#9E9E9E"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:text="Back"
                 android:layout_marginEnd="8dp"
-                android:textAllCaps="false" />
+                android:background="@drawable/button_background_gris"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/btnAjouter"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Add"
-                android:backgroundTint="#673AB7"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
                 android:layout_marginStart="8dp"
-                android:textAllCaps="false" />
+                android:background="@drawable/button_background_red"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
 

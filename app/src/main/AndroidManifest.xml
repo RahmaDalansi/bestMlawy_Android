@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,7 +17,50 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BestMlewi">
+        android:theme="@style/Theme.BestMlewi"
+        tools:targetApi="31">
+
+        <!-- Meta-data pour Google Play Services -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <!-- CLÉ API GOOGLE MAPS (OBLIGATOIRE) -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBGw9LoAOn4JfTequORtYOEosT_ZiQ_s3c" />
+
+        <!-- Login Activity comme activité principale -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:theme="@style/Theme.BestMlewi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Register Activity -->
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.BestMlewi" />
+
+        <!-- Employee Activity -->
+        <activity
+            android:name=".EmployeeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.BestMlewi.NoActionBar" />
+
+        <!-- Main Activity (pour les gérants) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.BestMlewi.NoActionBar" />
+
+        <!-- Activités employés -->
         <activity
             android:name=".ui.employee.Suppression"
             android:exported="false" />
@@ -23,17 +73,12 @@
         <activity
             android:name=".ui.employee.Consultation"
             android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.BestMlewi.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".EmployeeDeliveryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.BestMlewi.NoActionBar" />
+
     </application>
 
 </manifest>

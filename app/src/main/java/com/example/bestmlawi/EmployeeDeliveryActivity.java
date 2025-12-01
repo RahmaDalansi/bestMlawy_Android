@@ -1,4 +1,4 @@
-package com.example.bestmlawi.ui.deliver;
+package com.example.bestmlawi;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,10 +10,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
-import com.example.bestmlawi.R;
+import com.example.bestmlawi.ui.delivery.ActiveDeliveryFragment;
+import com.example.bestmlawi.ui.delivery.DeliveryOrdersFragment;
+import com.example.bestmlawi.ui.delivery.DeliveryProfileFragment;
+import com.example.bestmlawi.ui.delivery.DeliveryStatsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 
 public class EmployeeDeliveryActivity extends AppCompatActivity {
 
@@ -56,7 +60,7 @@ public class EmployeeDeliveryActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.delivery_menu, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 

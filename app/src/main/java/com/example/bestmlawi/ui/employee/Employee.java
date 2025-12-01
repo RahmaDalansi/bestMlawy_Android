@@ -11,13 +11,16 @@ public class Employee {
     private Date hiredDate;
     private String point_of_sale_id;
     private String location;
+    private String image;
+    private String address; // Ajout du champ address
 
     public Employee() {
         // Constructeur vide nécessaire pour Firestore
     }
 
     public Employee(String id, String name, String email, String phoneNumber,
-                    String role, Date hiredDate, String point_of_sale_id, String location) {
+                    String role, Date hiredDate, String point_of_sale_id,
+                    String location, String image, String address) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -26,6 +29,8 @@ public class Employee {
         this.hiredDate = hiredDate;
         this.point_of_sale_id = point_of_sale_id;
         this.location = location;
+        this.image = image;
+        this.address = address;
     }
 
     // Getters et Setters
@@ -52,6 +57,12 @@ public class Employee {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getImageUrl() { return image; }
+    public void setImageUrl(String imageUrl) { this.image = imageUrl; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
     @Override
     public String toString() {

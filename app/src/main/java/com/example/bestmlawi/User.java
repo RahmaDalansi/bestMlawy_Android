@@ -1,4 +1,4 @@
-package com.example.bestmlawi.models;
+package com.example.bestmlawi;
 
 public class User {
     private String uid;
