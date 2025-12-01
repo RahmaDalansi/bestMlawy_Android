@@ -13,6 +13,8 @@ navigationUi = "2.9.5"
 firebaseFirestore = "26.0.2"
 activity = "1.12.0"
 drawerlayout = "1.2.0"
+barcodeScanningCommon = "17.0.0"
+playServicesCodeScanner = "16.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -28,6 +30,8 @@ navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout", version.ref = "drawerlayout" }
+barcode-scanning-common = { group = "com.google.mlkit", name = "barcode-scanning-common", version.ref = "barcodeScanningCommon" }
+play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "playServicesCodeScanner" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

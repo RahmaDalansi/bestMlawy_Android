@@ -3,23 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home">
+    app:startDestination="@+id/nav_dashboard">
 
+    <!-- Dashboard/Home -->
     <fragment
-        android:id="@+id/nav_home"
+        android:id="@+id/nav_dashboard"
         android:name="com.example.bestmlawi.ui.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
+    <!-- Collaborateurs - Utiliser GalleryFragment temporairement -->
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_collabs"
         android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
+        android:label="@string/employees"
         tools:layout="@layout/fragment_gallery" />
 
+    <!-- Commandes - Utiliser SlideshowFragment temporairement -->
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_orders"
         android:name="com.example.bestmlawi.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
+        android:label="@string/orders"
         tools:layout="@layout/fragment_slideshow" />
+
+    <!-- Points de vente -->
+    <fragment
+        android:id="@+id/nav_sales"
+        android:name="com.example.bestmlawi.ui.salespoints.SalesPointsFragment"
+        android:label="@string/sales_point"
+        tools:layout="@layout/fragment_slideshow" />
+
+    <!-- Plus (Menu) - Utiliser HomeFragment temporairement -->
+    <fragment
+        android:id="@+id/nav_more"
+        android:name="com.example.bestmlawi.ui.home.HomeFragment"
+        android:label="@string/menu"
+        tools:layout="@layout/fragment_home" />
+
+    <!-- Profil - Utiliser GalleryFragment temporairement -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
+        android:label="@string/menu"
+        tools:layout="@layout/fragment_gallery" />
+
 </navigation>

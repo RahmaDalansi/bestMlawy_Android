@@ -36,5 +36,17 @@
     <!-- Couleurs pour la navigation delivery -->
     <color name="delivery_nav_color">#4CAF50</color>
 
+    <!-- aya -->
+    <color name="yellow_400">#FFD740</color>
+    <color name="green_500">#4CAF50</color>
+    <color name="gray_200">#EEEEEE</color>
+
+
+    <!--  rahma  -->
+    <color name="red_primary">#D32F2F</color>
+    <color name="red_dark">#B71C1C</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_medium">#BDBDBD</color>
+
 
 </resources>

@@ -8,6 +8,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -29,6 +34,11 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBGw9LoAOn4JfTequORtYOEosT_ZiQ_s3c" />
+
+        <!-- ML Kit Barcode Scanner -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
 
         <!-- Login Activity comme activité principale -->
         <activity
@@ -56,9 +66,14 @@
         <!-- Main Activity (pour les gérants) -->
         <activity
             android:name=".MainActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.BestMlewi.NoActionBar" />
+            android:theme="@style/Theme.BestMlewi.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- Activités employés -->
         <activity
@@ -78,6 +93,31 @@
             android:name=".EmployeeDeliveryActivity"
             android:exported="false"
             android:theme="@style/Theme.BestMlewi.NoActionBar" />
+
+        <!-- Consultation Orders -->
+        <activity
+            android:name=".ui.orders.Consultation_orders"
+            android:exported="false"
+            android:label="Gestion des Commandes"
+            tools:ignore="UnusedAttribute" />
+
+        <!-- AssignOrderActivity -->
+        <activity
+            android:name=".ui.orders.AssignOrderActivity"
+            android:exported="false"
+            android:label="Assigner Commande" />
+
+        <!-- FilterOrdersActivity -->
+        <activity
+            android:name=".ui.orders.FilterOrdersActivity"
+            android:exported="false"
+            android:label="Filtrer les Commandes"
+            tools:ignore="UnusedAttribute" />
+
+        <!-- SalesPointDetailsActivity (activité ajoutée) -->
+        <activity
+            android:name=".ui.salespoints.SalesPointDetailsActivity"
+            android:exported="false" />
 
     </application>
 

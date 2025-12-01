@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  var defaultLat = 36.8065;
+  var defaultLng = 10.1815;
+
+  var map = L.map('map').setView([defaultLat, defaultLng], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  var marker = null;
+
+  function initPosition(lat, lng) {
+    if (typeof lat === 'number' && typeof lng === 'number' && (lat !== 0 || lng !== 0)) {
+      map.setView([lat, lng], 12);
+      setMarker(lat, lng);
+    }
+  }
+
+  function setMarker(lat, lng) {
+    if (marker) {
+      map.removeLayer(marker);
+    }
+    marker = L.marker([lat, lng]).addTo(map);
+  }
+
+  map.on('click', function(e) {
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+    setMarker(lat, lng);
+    if (window.AndroidPicker && AndroidPicker.onLocationPicked) {
+      AndroidPicker.onLocationPicked(lat, lng);
+    }
+  });
+</script>
+</body>
+</html>

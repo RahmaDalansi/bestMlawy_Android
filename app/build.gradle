@@ -46,6 +46,8 @@ dependencies {
 
     // Firebase BOM (Bill of Materials) - Gère automatiquement les versions compatibles
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
+
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 
@@ -62,6 +64,8 @@ dependencies {
 
     // Image Loading
     implementation 'com.github.bumptech.glide:glide:4.14.2'
+    implementation libs.barcode.scanning.common
+    implementation libs.play.services.code.scanner
     annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
 
     // Testing

@@ -2,29 +2,29 @@ package com.example.bestmlawi;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bestmlawi.databinding.ActivityMainBinding;
 import com.example.bestmlawi.ui.employee.Consultation;
+import com.example.bestmlawi.ui.orders.Consultation_orders;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,29 +63,58 @@ public class MainActivity extends AppCompatActivity {
         // Configuration de la Bottom Navigation
         setupBottomNavigation();
 
-        // Configuration de la Navigation Drawer
+        // Configuration de la Navigation Drawer avec TOUTES les destinations
+        // Note: Inclure uniquement les destinations qui sont dans nav_graph.xml
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+
+
+                R.id.nav_dashboard,
+                R.id.nav_collabs,
+                R.id.nav_orders,
+                R.id.nav_sales,
+                R.id.nav_more,
+                R.id.nav_profile)
                 .setOpenableLayout(drawer)
                 .build();
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+
+        // Configuration de la Navigation View
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        // Gérer le clic sur le menu Employee dans la Navigation Drawer
+        // Gérer le clic sur le menu dans la Navigation Drawer
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
+            // Gérer les clics sur les Activities séparément
             if (itemId == R.id.nav_employee) {
                 openEmployeeConsultation();
                 drawer.closeDrawers();
                 return true;
+            } else if (itemId == R.id.nav_orders) {
+                openOrdersConsultation();
+                drawer.closeDrawers();
+                return true;
+
             }
-            // Pour les autres items, laisser Navigation Component gérer
-            return NavigationUI.onNavDestinationSelected(item, navController)
-                    || super.onOptionsItemSelected(item);
+
+            // Pour les autres items, mapper vers les fragments correspondants
+            try {
+                NavController navCtrl = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+
+                // Mapper les anciens IDs vers les nouveaux
+
+
+                drawer.closeDrawers();
+                return true;
+            } catch (Exception e) {
+                drawer.closeDrawers();
+                return false;
+            }
         });
+
+
 
         // Afficher le Dashboard par défaut au démarrage
         if (savedInstanceState == null) {
@@ -106,45 +135,63 @@ public class MainActivity extends AppCompatActivity {
         // Récupérer le NavController
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
 
-        // Configuration AppBarConfiguration pour la bottom navigation
+        // Configuration AppBarConfiguration pour les destinations de la bottom nav
         AppBarConfiguration bottomAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_dashboard,
+                R.id.nav_collabs,
+                R.id.nav_orders,
+                R.id.nav_sales,
+                R.id.nav_more,
+                R.id.nav_profile)
                 .build();
 
-        // Setup avec NavController pour les fragments standards
+        // Setup avec NavController
         NavigationUI.setupWithNavController(bottomNav, navController);
 
-        // Gérer manuellement les items qui ne sont pas dans la navigation graph
+        // Surcharger le comportement pour certains items spéciaux
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int itemId = item.getItemId();
 
-                if (itemId == R.id.nav_dashboard) {
-                    // Naviguer vers le fragment home
-                    navController.navigate(R.id.nav_home);
-                    return true;
-
-                } else if (itemId == R.id.nav_employee) {
-                    openEmployeeConsultation();
-                    return true;
-
-                } else if (itemId == R.id.nav_orders) {
-                    // Naviguer vers GalleryFragment pour les commandes
-                    navController.navigate(R.id.nav_gallery);
-                    return true;
-
-                } else if (itemId == R.id.nav_sales) {
-                    // Naviguer vers SlideshowFragment pour les points de vente
-                    navController.navigate(R.id.nav_slideshow);
-                    return true;
-
-                } else if (itemId == R.id.nav_more) {
+                if (itemId == R.id.nav_more) {
                     // Ouvrir le drawer navigation
                     binding.drawerLayout.openDrawer(binding.navView);
                     return true;
                 }
-                return false;
+
+                // Pour les items qui pointent vers des Activities
+                if (itemId == R.id.nav_employee) {
+                    openEmployeeConsultation();
+                    return true;
+                } else if (itemId == R.id.nav_orders) {
+                    openOrdersConsultation();
+                    return true;
+                }
+
+                // Laisser NavigationUI gérer les autres (fragments)
+                try {
+                    NavController navCtrl = Navigation.findNavController(MainActivity.this,
+                            R.id.nav_host_fragment_content_main);
+
+                    // Mapper si nécessaire
+                    if (itemId == R.id.nav_collabs) {
+                        navCtrl.navigate(R.id.nav_collabs);
+                        return true;
+                    } else if (itemId == R.id.nav_sales) {
+                        navCtrl.navigate(R.id.nav_sales);
+                        return true;
+                    } else if (itemId == R.id.nav_profile) {
+                        navCtrl.navigate(R.id.nav_profile);
+                        return true;
+                    } else {
+                        return NavigationUI.onNavDestinationSelected(item, navCtrl);
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Navigation error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
             }
         });
     }
@@ -152,7 +199,8 @@ public class MainActivity extends AppCompatActivity {
     private void showHomeFragment() {
         try {
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            navController.navigate(R.id.nav_home);
+            // Naviguer vers le dashboard
+            navController.navigate(R.id.nav_dashboard);
         } catch (Exception e) {
             Toast.makeText(this, "Erreur navigation: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -166,6 +214,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Accès réservé aux administrateurs", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void openOrdersConsultation() {
+        Intent intent = new Intent(MainActivity.this, Consultation_orders.class);
+        startActivity(intent);
     }
 
     private void checkAuthentication() {
