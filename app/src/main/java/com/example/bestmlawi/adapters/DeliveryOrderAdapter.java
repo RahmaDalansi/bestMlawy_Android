@@ -26,6 +26,12 @@ public class DeliveryOrderAdapter extends RecyclerView.Adapter<DeliveryOrderAdap
         void onCompleteDelivery(Order order);
     }
 
+    // Constructeur modifié pour être compatible avec ton fragment
+    public DeliveryOrderAdapter(List<Order> orderList) {
+        this.orderList = orderList;
+    }
+
+    // Constructeur avec listener
     public DeliveryOrderAdapter(List<Order> orderList, OnOrderClickListener listener) {
         this.orderList = orderList;
         this.listener = listener;
@@ -47,7 +53,13 @@ public class DeliveryOrderAdapter extends RecyclerView.Adapter<DeliveryOrderAdap
 
     @Override
     public int getItemCount() {
-        return orderList.size();
+        return orderList != null ? orderList.size() : 0;
+    }
+
+    // Méthode pour mettre à jour les données
+    public void updateData(List<Order> newOrders) {
+        this.orderList = newOrders;
+        notifyDataSetChanged();
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
@@ -56,6 +68,7 @@ public class DeliveryOrderAdapter extends RecyclerView.Adapter<DeliveryOrderAdap
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
+            // Assure-toi que ces IDs existent dans ton layout item_delivery_order.xml
             tvCustomerName = itemView.findViewById(R.id.tv_customer_name);
             tvDeliveryAddress = itemView.findViewById(R.id.tv_delivery_address);
             tvOrderDate = itemView.findViewById(R.id.tv_order_date);
@@ -66,89 +79,156 @@ public class DeliveryOrderAdapter extends RecyclerView.Adapter<DeliveryOrderAdap
         }
 
         public void bind(Order order, OnOrderClickListener listener) {
-            tvCustomerName.setText(order.getCustomerName());
-            tvDeliveryAddress.setText(order.getDeliveryAddress());
-            tvOrderDate.setText(order.getFormattedOrderDate());
-            tvTotalAmount.setText(order.getFormattedTotal());
+            if (order == null) return;
 
-            // Configurer le statut avec couleur
-            setupStatus(order.getStatus());
+            // Mettre à jour les TextViews avec des valeurs par défaut
+            tvCustomerName.setText(order.getCustomerName() != null ? order.getCustomerName() : "Client");
+            tvDeliveryAddress.setText(order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "Adresse non spécifiée");
 
-            // Configurer les boutons d'action selon le statut
+            if (order.getOrderDate() != null) {
+                tvOrderDate.setText(order.getFormattedOrderDate());
+            } else {
+                tvOrderDate.setText("Date non disponible");
+            }
+
+            tvTotalAmount.setText(order.getFormattedTotal() != null ? order.getFormattedTotal() : "0.00 €");
+
+            // Configurer le statut - VERSION CORRIGÉE
+            String status = order.getStatus();
+            if (status == null) {
+                status = "pending";
+            }
+            setupStatus(status);
+
+            // Configurer les boutons d'action
             setupActionButtons(order, listener);
 
             // Gérer le clic sur l'item
-            itemView.setOnClickListener(v -> listener.onOrderClick(order));
+            if (listener != null) {
+                itemView.setOnClickListener(v -> listener.onOrderClick(order));
+            }
         }
 
         private void setupStatus(String status) {
-            tvStatus.setText(getStatusText(status));
+            String statusText = getStatusText(status);
+            tvStatus.setText(statusText);
+
             int colorRes;
+            // Utiliser les mêmes valeurs que dans ta base de données
             switch (status) {
-                case "pending":
-                    colorRes = R.color.status_pending;
-                    break;
+                case "Prêt":
+                case "ready":
                 case "assigned":
                     colorRes = R.color.status_assigned;
                     break;
+                case "En cours":
                 case "in_progress":
                     colorRes = R.color.status_in_progress;
                     break;
+                case "Livré":
                 case "delivered":
                     colorRes = R.color.status_delivered;
                     break;
-                default:
+                case "pending":
+                    colorRes = R.color.status_pending;
+                    break;
+                case "cancelled":
                     colorRes = R.color.status_cancelled;
                     break;
+                default:
+                    colorRes = R.color.status_pending;
+                    break;
             }
-            tvStatus.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), colorRes));
+
+            try {
+                tvStatus.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), colorRes));
+            } catch (Exception e) {
+                // Si la couleur n'existe pas, utiliser une couleur par défaut
+                tvStatus.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.status_pending));
+            }
         }
 
         private String getStatusText(String status) {
             switch (status) {
-                case "pending": return "En attente";
+                case "Prêt":
+                case "ready":
                 case "assigned": return "Assignée";
+                case "En cours":
                 case "in_progress": return "En cours";
+                case "Livré":
                 case "delivered": return "Livrée";
+                case "pending": return "En attente";
                 case "cancelled": return "Annulée";
-                default: return "Inconnu";
+                default: return status; // Retourne le statut tel quel si inconnu
             }
         }
 
-        // Dans la méthode bind() de OrderViewHolder
         private void setupActionButtons(Order order, OnOrderClickListener listener) {
+            if (listener == null) {
+                btnAction1.setVisibility(View.GONE);
+                btnAction2.setVisibility(View.GONE);
+                return;
+            }
+
+            String status = order.getStatus();
+            if (status == null) {
+                status = "pending";
+            }
+
             btnAction1.setVisibility(View.VISIBLE);
             btnAction2.setVisibility(View.VISIBLE);
 
-            switch (order.getStatus()) {
+            switch (status) {
+                case "Prêt":
+                case "ready":
                 case "assigned":
-                    // Commande assignée mais pas encore démarrée
-                    btnAction1.setText("Commencer");
-                    btnAction2.setText("Détails");
-                    btnAction1.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.status_assigned));
+                    // Commande assignée
+                    btnAction1.setText("COMMENCER");
+                    btnAction2.setText("DÉTAILS");
+                    setButtonStyle(btnAction1, R.color.status_in_progress, android.R.color.white);
+                    setButtonStyle(btnAction2, android.R.color.transparent, R.color.status_assigned);
                     btnAction1.setOnClickListener(v -> listener.onStartDelivery(order));
                     btnAction2.setOnClickListener(v -> listener.onOrderClick(order));
                     break;
 
+                case "En cours":
                 case "in_progress":
-                    // Commande en cours de livraison
-                    btnAction1.setText("Terminer");
-                    btnAction2.setText("Détails");
-                    btnAction1.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.status_in_progress));
+                    // Commande en cours
+                    btnAction1.setText("TERMINER");
+                    btnAction2.setText("DÉTAILS");
+                    setButtonStyle(btnAction1, R.color.status_delivered, android.R.color.white);
+                    setButtonStyle(btnAction2, android.R.color.transparent, R.color.status_in_progress);
                     btnAction1.setOnClickListener(v -> listener.onCompleteDelivery(order));
                     btnAction2.setOnClickListener(v -> listener.onOrderClick(order));
                     break;
 
+                case "pending":
+                    // Commande en attente
+                    btnAction1.setText("ACCEPTER");
+                    btnAction2.setText("DÉTAILS");
+                    setButtonStyle(btnAction1, R.color.status_assigned, android.R.color.white);
+                    setButtonStyle(btnAction2, android.R.color.transparent, R.color.status_pending);
+                    btnAction1.setOnClickListener(v -> listener.onAcceptOrder(order));
+                    btnAction2.setOnClickListener(v -> listener.onOrderClick(order));
+                    break;
+
                 default:
+                    // Autres statuts (livrée, annulée)
                     btnAction1.setVisibility(View.GONE);
-                    btnAction2.setText("Détails");
+                    btnAction2.setText("VOIR DÉTAILS");
+                    setButtonStyle(btnAction2, android.R.color.transparent, R.color.status_delivered);
                     btnAction2.setOnClickListener(v -> listener.onOrderClick(order));
                     break;
             }
+        }
 
-            // Style des boutons
-            btnAction1.setTextColor(ContextCompat.getColor(itemView.getContext(), android.R.color.white));
-            btnAction2.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.status_assigned));
+        private void setButtonStyle(Button button, int backgroundColorRes, int textColorRes) {
+            button.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), backgroundColorRes));
+            button.setTextColor(ContextCompat.getColor(itemView.getContext(), textColorRes));
+
+            // Ajouter du padding pour un meilleur look
+            button.setPadding(16, 8, 16, 8);
+            button.setAllCaps(false);
         }
     }
 }

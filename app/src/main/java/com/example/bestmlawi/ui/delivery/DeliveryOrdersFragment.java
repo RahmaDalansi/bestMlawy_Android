@@ -16,11 +16,11 @@ import com.example.bestmlawi.adapters.DeliveryOrderAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class DeliveryOrdersFragment extends Fragment {
@@ -43,7 +43,7 @@ public class DeliveryOrdersFragment extends Fragment {
         initializeViews(view);
         setupRecyclerView();
         setupSwipeRefresh();
-        loadDeliveryOrders();
+        loadUserOrders(); // Charger seulement les commandes de l'utilisateur connecté
 
         return view;
     }
@@ -54,7 +54,6 @@ public class DeliveryOrdersFragment extends Fragment {
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
         tvErrorState = view.findViewById(R.id.tv_error_state);
 
-        // Masquer tous les états au début
         showLoadingState();
     }
 
@@ -86,20 +85,23 @@ public class DeliveryOrdersFragment extends Fragment {
 
     private void setupSwipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            loadDeliveryOrders();
+            loadUserOrders();
         });
     }
 
-    private void loadDeliveryOrders() {
+    private void loadUserOrders() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
-            showErrorState("Utilisateur non connecté");
+            showErrorState("Veuillez vous connecter");
             swipeRefreshLayout.setRefreshing(false);
             return;
         }
 
         String userId = currentUser.getUid();
 
+        System.out.println("DEBUG - Recherche des commandes pour deliverId: " + userId);
+
+        // Chercher les commandes où deliverId = userId de l'utilisateur connecté
         db.collection("orders")
                 .whereEqualTo("deliverId", userId)
                 .get()
@@ -108,18 +110,74 @@ public class DeliveryOrdersFragment extends Fragment {
 
                     if (task.isSuccessful()) {
                         orderList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Order order = document.toObject(Order.class);
-                            order.setOrderId(document.getId());
-                            orderList.add(order);
+                        int count = 0;
 
-                            // DEBUG
-                            System.out.println("DEBUG - Commande: " + order.getOrderId() +
-                                    ", DeliverId: " + order.getDeliverId() + // ← Maintenant getDeliverId()
-                                    ", Status: " + order.getStatus());
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            try {
+                                count++;
+
+                                // Récupérer les données du document
+                                Order order = new Order();
+
+                                // Définir l'ID du document
+                                order.setOrderId(document.getId());
+
+                                // Récupérer les champs de base
+                                String deliveryName = document.getString("deliveryName");
+                                String address = document.getString("address");
+                                String status = document.getString("status");
+                                String deliverId = document.getString("deliverId");
+                                String salesPointId = document.getString("sales_point_id");
+                                String userIdFromDb = document.getString("user_id");
+
+                                // Définir les valeurs dans l'objet Order
+                                order.setCustomerName(deliveryName != null ? deliveryName : "Nom inconnu");
+                                order.setDeliveryAddress(address != null ? address : "Adresse inconnue");
+                                order.setStatus(status != null ? status : "pending");
+                                order.setDeliverId(deliverId);
+
+                                // Stocker les autres infos si nécessaire
+                                if (userIdFromDb != null) {
+                                    order.setCustomerPhone("Client ID: " + userIdFromDb);
+                                }
+
+                                // Récupérer orderDate (timestamp Firestore)
+                                Object orderDateObj = document.get("orderDate");
+                                if (orderDateObj instanceof com.google.firebase.Timestamp) {
+                                    com.google.firebase.Timestamp timestamp = (com.google.firebase.Timestamp) orderDateObj;
+                                    order.setOrderDate(timestamp.toDate());
+                                } else if (orderDateObj instanceof Date) {
+                                    order.setOrderDate((Date) orderDateObj);
+                                } else {
+                                    order.setOrderDate(new Date());
+                                }
+
+                                // Debug logging pour chaque commande trouvée
+                                System.out.println("DEBUG - Commande " + count + " trouvée:");
+                                System.out.println("  ID: " + document.getId());
+                                System.out.println("  Nom: " + deliveryName);
+                                System.out.println("  Adresse: " + address);
+                                System.out.println("  Statut: " + status);
+                                System.out.println("  DeliverId: " + deliverId);
+                                System.out.println("  Date: " + order.getOrderDate());
+
+                                // Vérifier si le deliverId correspond bien
+                                if (deliverId != null && deliverId.equals(userId)) {
+                                    System.out.println("  ✓ DeliverId correspond à l'utilisateur connecté");
+                                } else {
+                                    System.out.println("  ✗ DeliverId NE correspond PAS");
+                                }
+
+                                // Ajouter à la liste
+                                orderList.add(order);
+
+                            } catch (Exception e) {
+                                System.out.println("Erreur lors du parsing de la commande " + document.getId() + ": " + e.getMessage());
+                                e.printStackTrace();
+                            }
                         }
 
-                        // Trier manuellement par orderDate
+                        // Trier par date (plus récent en premier)
                         Collections.sort(orderList, (o1, o2) -> {
                             if (o1.getOrderDate() != null && o2.getOrderDate() != null) {
                                 return o2.getOrderDate().compareTo(o1.getOrderDate());
@@ -129,26 +187,32 @@ public class DeliveryOrdersFragment extends Fragment {
 
                         orderAdapter.notifyDataSetChanged();
 
+                        System.out.println("DEBUG - Nombre total de commandes trouvées: " + count);
+                        System.out.println("DEBUG - Nombre de commandes dans la liste: " + orderList.size());
+
                         if (orderList.isEmpty()) {
-                            showEmptyState();
+                            showEmptyState("Aucune commande assignée à vous");
                         } else {
                             showDataState();
                         }
                     } else {
-                        String errorMessage = "Erreur de chargement: " +
-                                (task.getException() != null ?
-                                        task.getException().getMessage() : "Erreur inconnue");
+                        String errorMessage = "Erreur de chargement: ";
+                        if (task.getException() != null) {
+                            errorMessage += task.getException().getMessage();
+                            task.getException().printStackTrace();
+                        } else {
+                            errorMessage += "Erreur inconnue";
+                        }
                         showErrorState(errorMessage);
                     }
                 });
     }
 
-    // Méthodes pour gérer les différents états d'affichage
+    // Méthodes pour gérer les états d'affichage
     private void showLoadingState() {
         ordersRecyclerView.setVisibility(View.GONE);
         tvEmptyState.setVisibility(View.GONE);
         tvErrorState.setVisibility(View.GONE);
-        // Le SwipeRefreshLayout montre l'indicateur de chargement
     }
 
     private void showDataState() {
@@ -157,11 +221,11 @@ public class DeliveryOrdersFragment extends Fragment {
         tvErrorState.setVisibility(View.GONE);
     }
 
-    private void showEmptyState() {
+    private void showEmptyState(String message) {
         ordersRecyclerView.setVisibility(View.GONE);
         tvEmptyState.setVisibility(View.VISIBLE);
         tvErrorState.setVisibility(View.GONE);
-        tvEmptyState.setText("Aucune commande assignée");
+        tvEmptyState.setText(message);
     }
 
     private void showErrorState(String errorMessage) {
@@ -172,10 +236,8 @@ public class DeliveryOrdersFragment extends Fragment {
     }
 
     private void showOrderDetails(Order order) {
-        // Ouvrir les détails de la commande
-        // Intent intent = new Intent(getActivity(), OrderDetailsActivity.class);
-        // intent.putExtra("order_id", order.getOrderId());
-        // startActivity(intent);
+        // TODO: Implémenter l'ouverture des détails de commande
+        System.out.println("Détails de la commande: " + order.getOrderId());
     }
 
     private void acceptOrder(Order order) {
@@ -183,12 +245,12 @@ public class DeliveryOrdersFragment extends Fragment {
         if (currentUser != null) {
             db.collection("orders").document(order.getOrderId())
                     .update(
-                            "status", "assigned",
-                            "deliveryPersonId", currentUser.getUid(),
-                            "deliveryPersonName", currentUser.getDisplayName()
+                            "status", "Prêt",
+                            "deliverId", currentUser.getUid(),
+                            "deliveryName", currentUser.getDisplayName()
                     )
                     .addOnSuccessListener(aVoid -> {
-                        loadDeliveryOrders(); // Recharger la liste
+                        loadUserOrders(); // Recharger la liste
                     })
                     .addOnFailureListener(e -> {
                         showErrorState("Erreur d'acceptation: " + e.getMessage());
@@ -198,9 +260,9 @@ public class DeliveryOrdersFragment extends Fragment {
 
     private void startDelivery(Order order) {
         db.collection("orders").document(order.getOrderId())
-                .update("status", "in_progress")
+                .update("status", "En cours")
                 .addOnSuccessListener(aVoid -> {
-                    loadDeliveryOrders(); // Recharger la liste
+                    loadUserOrders();
                 })
                 .addOnFailureListener(e -> {
                     showErrorState("Erreur de démarrage: " + e.getMessage());
@@ -210,30 +272,20 @@ public class DeliveryOrdersFragment extends Fragment {
     private void completeDelivery(Order order) {
         db.collection("orders").document(order.getOrderId())
                 .update(
-                        "status", "delivered",
-                        "deliveryDate", new java.util.Date()
+                        "status", "Livré",
+                        "deliveryDate", new Date()
                 )
                 .addOnSuccessListener(aVoid -> {
-                    // Mettre à jour les statistiques du livreur
-                    updateDeliveryStats();
-                    loadDeliveryOrders(); // Recharger la liste
+                    loadUserOrders();
                 })
                 .addOnFailureListener(e -> {
                     showErrorState("Erreur de livraison: " + e.getMessage());
                 });
     }
 
-    private void updateDeliveryStats() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            // Logique pour mettre à jour les statistiques
-            // db.collection("delivery_stats").document(currentUser.getUid())...
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
-        loadDeliveryOrders(); // Recharger à chaque retour sur le fragment
+        loadUserOrders(); // Recharger à chaque retour
     }
 }

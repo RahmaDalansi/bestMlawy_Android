@@ -37,14 +37,15 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout_active"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <LinearLayout
+        <!-- CHANGEMENT : Utilise RelativeLayout au lieu de LinearLayout -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <!-- État vide -->
+            <!-- État vide - CENTRAL -->
             <TextView
                 android:id="@+id/tv_empty_state_active"
                 android:layout_width="match_parent"
@@ -53,16 +54,17 @@
                 android:textSize="16sp"
                 android:textColor="#666666"
                 android:gravity="center"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:padding="40dp" />
 
-            <!-- Liste des livraisons actives -->
+            <!-- Liste des livraisons actives - PAR DESSUS -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/active_orders_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="8dp" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

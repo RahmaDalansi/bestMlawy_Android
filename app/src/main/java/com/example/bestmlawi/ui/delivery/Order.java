@@ -3,6 +3,9 @@ package com.example.bestmlawi.ui.delivery;
 import java.util.Date;
 import java.util.List;
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+@IgnoreExtraProperties
 public class Order {
     private String orderId;
     private String customerName;

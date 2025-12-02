@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
         android:id="@+id/nav_dashboard"
         android:icon="@drawable/ic_dashboard"
@@ -21,8 +21,7 @@
         android:title="@string/sales_point" />
 
     <item
-        android:id="@+id/nav_more"
+        android:id="@+id/nav_menu"
         android:icon="@drawable/ic_menu"
         android:title="@string/menu" />
-
 </menu>

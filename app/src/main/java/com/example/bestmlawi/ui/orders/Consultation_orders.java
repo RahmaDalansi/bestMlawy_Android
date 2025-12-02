@@ -1,7 +1,6 @@
 package com.example.bestmlawi.ui.orders;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,6 +15,7 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.bestmlawi.R;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-// Imports nécessaires
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
@@ -38,14 +37,13 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 import android.util.Log;
 
-public class Consultation_orders extends Activity {
+public class Consultation_orders extends Fragment {
 
     private ImageView QRcodeImage;
     private ListView lstOrders;
     private TextView txtTitle, txtOpenFilters;
     private EditText edtSearch;
-    private boolean isScanning = false; // ✅ Champ de classe → accessible partout
-
+    private boolean isScanning = false;
 
     private ArrayAdapter<String> adpOrders;
     private FirebaseFirestore db;
@@ -54,34 +52,32 @@ public class Consultation_orders extends Activity {
     private List<Order> orderList = new ArrayList<>();
     private List<String> orderStringList = new ArrayList<>();
 
-    // Pour afficher les détails des plats
     private Map<String, MenuItem> menuItemsDetail = new HashMap<>();
     private ArrayAdapter<OrderLineItem> orderItemsAdapter;
 
-    // 🔍 Filtres sélectionnés
-    private String selectedStatus = "";           // ex: "Delivered"
-    private String selectedSalesPoint = "";       // ex: "Available"
+    private String selectedStatus = "";
+    private String selectedSalesPoint = "";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.consultation_orders);
-
-        initialiser();
-        ecouteurs();
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.consultation_orders, container, false);
+        initialiser(root);
+        setupListeners();
         remplir();
-        ecouteursRecherche(); // Rechercher en temps réel
+        setupSearchListener();
+        initBarcodeScanner();
+        return root;
     }
 
-    private void initialiser() {
-        lstOrders = findViewById(R.id.lstOrders);
-        txtTitle = findViewById(R.id.txtTitle);
-        txtOpenFilters = findViewById(R.id.txtOpenFilters);
-        edtSearch = findViewById(R.id.edtSearch);
-        QRcodeImage = findViewById(R.id.imgScanQr);
+    private void initialiser(View root) {
+        lstOrders = root.findViewById(R.id.lstOrders);
+        txtTitle = root.findViewById(R.id.txtTitle);
+        txtOpenFilters = root.findViewById(R.id.txtOpenFilters);
+        edtSearch = root.findViewById(R.id.edtSearch);
+        QRcodeImage = root.findViewById(R.id.imgScanQr);
 
         orderStringList = new ArrayList<>();
-        adpOrders = new ArrayAdapter<>(this, 0, orderStringList) {
+        adpOrders = new ArrayAdapter<>(requireContext(), 0, orderStringList) {
             @NonNull
             @Override
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -116,7 +112,7 @@ public class Consultation_orders extends Activity {
 
                 btnAccept.setOnClickListener(v -> {
                     if (order != null) {
-                        Intent intent = new Intent(Consultation_orders.this, AssignOrderActivity.class);
+                        Intent intent = new Intent(requireActivity(), AssignOrderActivity.class);
                         intent.putExtra("ORDER_ID", order.getId());
                         intent.putExtra("DOCUMENT_ID", order.getId());
                         startActivityForResult(intent, 1001);
@@ -128,26 +124,20 @@ public class Consultation_orders extends Activity {
         };
         lstOrders.setAdapter(adpOrders);
         db = FirebaseFirestore.getInstance();
-        initBarcodeScanner();
-
     }
 
-    private void ecouteurs() {
+    private void setupListeners() {
         txtOpenFilters.setOnClickListener(v -> {
-            Intent intent = new Intent(this, FilterOrdersActivity.class);
+            Intent intent = new Intent(getActivity(), FilterOrdersActivity.class);
             startActivityForResult(intent, 1002);
         });
-        QRcodeImage.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onScanQRCode();
-                    }
-                }
-        );
+
+        QRcodeImage.setOnClickListener(v -> {
+            onScanQRCode();
+        });
     }
 
-    private void ecouteursRecherche() {
+    private void setupSearchListener() {
         edtSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -215,11 +205,13 @@ public class Consultation_orders extends Activity {
 
                     menuItemsDetail.put(item.getId(), menuItem);
 
-                    runOnUiThread(() -> {
-                        if (orderItemsAdapter != null) {
-                            orderItemsAdapter.notifyDataSetChanged();
-                        }
-                    });
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            if (orderItemsAdapter != null) {
+                                orderItemsAdapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
                 });
     }
 
@@ -238,8 +230,8 @@ public class Consultation_orders extends Activity {
     }
 
     private void showOrderDialog(Order order) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
         View dialogView = inflater.inflate(R.layout.order_dialog, null);
         builder.setView(dialogView);
 
@@ -319,7 +311,7 @@ public class Consultation_orders extends Activity {
                             fetchMenuItemForOrderLineItem(item);
                         }
 
-                        orderItemsAdapter = new ArrayAdapter<>(this, R.layout.item_order_item, items) {
+                        orderItemsAdapter = new ArrayAdapter<>(requireContext(), R.layout.item_order_item, items) {
                             @NonNull
                             @Override
                             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -351,14 +343,14 @@ public class Consultation_orders extends Activity {
 
                         listView.setAdapter(orderItemsAdapter);
                     } else {
-                        Toast.makeText(this, "Erreur chargement: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(), "Erreur chargement: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
     private void showDeleteConfirmationDialog(Order order) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
         View deleteView = inflater.inflate(R.layout.suppression, null);
         builder.setView(deleteView);
 
@@ -388,10 +380,10 @@ public class Consultation_orders extends Activity {
                 .update("status", newStatus)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Statut mis à jour", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Statut mis à jour", Toast.LENGTH_SHORT).show();
                         remplir();
                     } else {
-                        Toast.makeText(this, "Erreur: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Erreur: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -401,10 +393,10 @@ public class Consultation_orders extends Activity {
                 .delete()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Commande supprimée", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Commande supprimée", Toast.LENGTH_SHORT).show();
                         remplir();
                     } else {
-                        Toast.makeText(this, "Erreur: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Erreur: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -424,35 +416,29 @@ public class Consultation_orders extends Activity {
                             orderList.add(order);
                         }
 
-                        filtrerOrders(); // Appliquer filtres actuels
+                        filtrerOrders();
                     } else {
-                        Toast.makeText(getApplicationContext(),
+                        Toast.makeText(requireContext(),
                                 "Erreur Firebase: " + task.getException().getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    /**
-     * Méthode de filtrage identique à filtrerEmployees()
-     */
     private void filtrerOrders() {
         String searchText = edtSearch.getText().toString().toLowerCase().trim();
 
         orderStringList.clear();
 
         for (Order order : orderList) {
-            // 🔍 Filtre par recherche (ID, adresse, statut)
             boolean matchesSearch = searchText.isEmpty() ||
                     order.getId().toLowerCase().contains(searchText) ||
                     (order.getAddress() != null && order.getAddress().toLowerCase().contains(searchText)) ||
                     (order.getStatus() != null && order.getStatus().toLowerCase().contains(searchText));
 
-            // 🏷️ Filtre par statut
             boolean matchesStatus = selectedStatus.isEmpty() ||
                     (order.getStatus() != null && order.getStatus().equals(selectedStatus));
 
-            // 📍 Filtre par point de vente
             boolean matchesSalesPoint = selectedSalesPoint.isEmpty() ||
                     (order.getSales_point_id() != null &&
                             order.getSales_point_id().contains(selectedSalesPoint));
@@ -473,27 +459,25 @@ public class Consultation_orders extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1001 && resultCode == RESULT_OK) {
+        if (requestCode == 1001 && resultCode == getActivity().RESULT_OK) {
             String message = data.getStringExtra("MESSAGE");
             if (message != null) {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
             }
             remplir();
         }
 
-        else if (requestCode == 1002 && resultCode == RESULT_OK && data != null) {
-            // Mettre à jour les filtres sélectionnés
+        else if (requestCode == 1002 && resultCode == getActivity().RESULT_OK && data != null) {
             selectedStatus = data.getStringExtra("FILTER_STATUS") != null ?
                     data.getStringExtra("FILTER_STATUS") : "";
 
             selectedSalesPoint = data.getStringExtra("FILTER_SALES_POINT_FILTER") != null ?
                     data.getStringExtra("FILTER_SALES_POINT_FILTER") : "";
 
-            // Ne pas utiliser min/max price ici (pas de totalAmount dans Order)
-            filtrerOrders(); // 🔥 Appliquer immédiatement les filtres
+            filtrerOrders();
         }
     }
 
@@ -505,34 +489,32 @@ public class Consultation_orders extends Activity {
                 .enableAutoZoom()
                 .build();
 
-        scanner = GmsBarcodeScanning.getClient(this, options);
-
+        scanner = GmsBarcodeScanning.getClient(requireContext(), options);
     }
 
     private void scanQrCode() {
         scanner.startScan()
                 .addOnSuccessListener(barcode -> {
                     if (barcode == null) {
-                        Toast.makeText(this, "Aucun code détecté", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Aucun code détecté", Toast.LENGTH_SHORT).show();
                         isScanning = false;
                         return;
                     }
 
                     String rawValue = barcode.getRawValue();
                     if (rawValue == null || rawValue.trim().isEmpty()) {
-                        Toast.makeText(this, "Code vide ou invalide", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Code vide ou invalide", Toast.LENGTH_SHORT).show();
                         isScanning = false;
                         return;
                     }
 
-                    // ✅ Tout est bon → continuez la logique
                     Map<String, Object> data = new HashMap<>();
                     data.put("status", "Livré");
                     db.collection("orders").document(rawValue).update(data)
                             .addOnSuccessListener(aVoid ->
-                                    Toast.makeText(this, "✅ Commande marquée comme livrée", Toast.LENGTH_LONG).show())
+                                    Toast.makeText(getContext(), "✅ Commande marquée comme livrée", Toast.LENGTH_LONG).show())
                             .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Erreur mise à jour : " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                    Toast.makeText(getContext(), "Erreur mise à jour : " + e.getMessage(), Toast.LENGTH_SHORT).show());
 
                     isScanning = false;
                 })
@@ -541,22 +523,24 @@ public class Consultation_orders extends Activity {
                     System.out.println(e.getMessage());
                     System.out.println(e.getCause());
                     System.out.println(Arrays.toString(e.getStackTrace()));
-                    Toast.makeText(this, "Scan échoué : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Scan échoué : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     public boolean onScanQRCode() {
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            // 📣 Demande la permission si non accordée
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.CAMERA}, 1001);
         } else {
-            // ✅ Permission déjà accordée → lance directement le scan
             scanQrCode();
         }
         return true;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        remplir();
     }
 }

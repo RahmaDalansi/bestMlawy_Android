@@ -9,42 +9,42 @@
     <fragment
         android:id="@+id/nav_dashboard"
         android:name="com.example.bestmlawi.ui.home.HomeFragment"
-        android:label="@string/menu_home"
+        android:label="@string/dashboard"
         tools:layout="@layout/fragment_home" />
 
-    <!-- Collaborateurs - Utiliser GalleryFragment temporairement -->
+    <!-- Collaborateurs -->
     <fragment
-        android:id="@+id/nav_collabs"
-        android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
+        android:id="@+id/nav_employee"
+        android:name="com.example.bestmlawi.ui.employee.Consultation"
         android:label="@string/employees"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/consultation" />
 
-    <!-- Commandes - Utiliser SlideshowFragment temporairement -->
+    <!-- Commandes (MAINTENANT UN FRAGMENT) -->
     <fragment
         android:id="@+id/nav_orders"
-        android:name="com.example.bestmlawi.ui.slideshow.SlideshowFragment"
+        android:name="com.example.bestmlawi.ui.orders.Consultation_orders"
         android:label="@string/orders"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/consultation_orders" />
 
     <!-- Points de vente -->
     <fragment
         android:id="@+id/nav_sales"
         android:name="com.example.bestmlawi.ui.salespoints.SalesPointsFragment"
         android:label="@string/sales_point"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_sales_points" />
 
-    <!-- Plus (Menu) - Utiliser HomeFragment temporairement -->
+    <!-- Menu -->
     <fragment
-        android:id="@+id/nav_more"
-        android:name="com.example.bestmlawi.ui.home.HomeFragment"
+        android:id="@+id/nav_menu"
+        android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
         android:label="@string/menu"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_gallery" />
 
-    <!-- Profil - Utiliser GalleryFragment temporairement -->
+    <!-- Profil -->
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
-        android:label="@string/menu"
+        android:label="@string/profile"
         tools:layout="@layout/fragment_gallery" />
 
 </navigation>

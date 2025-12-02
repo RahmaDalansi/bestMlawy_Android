@@ -20,6 +20,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ActiveDeliveryFragment extends Fragment {
@@ -29,7 +30,7 @@ public class ActiveDeliveryFragment extends Fragment {
     private List<Order> activeOrderList;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private TextView tvEmptyState;
+    private TextView tvEmptyState, tvActiveCount;
     private SwipeRefreshLayout swipeRefreshLayout;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,7 +51,14 @@ public class ActiveDeliveryFragment extends Fragment {
     private void initializeViews(View view) {
         activeOrdersRecyclerView = view.findViewById(R.id.active_orders_recycler_view);
         tvEmptyState = view.findViewById(R.id.tv_empty_state_active);
+        tvActiveCount = view.findViewById(R.id.tv_active_count);
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_active);
+
+        // CORRECTION : Ne pas cacher tvActiveCount au début
+        // Juste initialiser le texte
+        if (tvActiveCount != null) {
+            tvActiveCount.setText("Chargement...");
+        }
     }
 
     private void setupRecyclerView() {
@@ -63,15 +71,12 @@ public class ActiveDeliveryFragment extends Fragment {
 
             @Override
             public void onAcceptOrder(Order order) {
-                // Non utilisé dans les livraisons actives - les commandes sont déjà acceptées
+                // Non utilisé dans ce fragment
             }
 
             @Override
             public void onStartDelivery(Order order) {
-                // Si la commande est "assigned", on peut la démarrer
-                if ("assigned".equals(order.getStatus())) {
-                    startDelivery(order);
-                }
+                startDelivery(order);
             }
 
             @Override
@@ -85,53 +90,102 @@ public class ActiveDeliveryFragment extends Fragment {
     private void setupSwipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             loadActiveDeliveries();
-            swipeRefreshLayout.setRefreshing(false);
         });
     }
 
     private void loadActiveDeliveries() {
+        swipeRefreshLayout.setRefreshing(true);
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            showErrorState("Veuillez vous connecter");
+            swipeRefreshLayout.setRefreshing(false);
+            return;
+        }
 
         String userId = currentUser.getUid();
 
-        // Charger uniquement les commandes en cours de livraison (assigned et in_progress)
+        System.out.println("DEBUG - Chargement des livraisons actives pour: " + userId);
+
+        // CORRECTION : Amélioration de la requête
         db.collection("orders")
-                .whereEqualTo("deliveryPersonId", userId)
-                .whereIn("status", java.util.Arrays.asList("assigned", "in_progress"))
-                .orderBy("orderDate", Query.Direction.ASCENDING)
+                .whereEqualTo("deliverId", userId)
+                .whereIn("status", Arrays.asList("assigned", "in_progress", "Prêt", "En cours"))
                 .get()
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        activeOrderList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Order order = document.toObject(Order.class);
-                            activeOrderList.add(order);
-                        }
-                        orderAdapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false);
 
-                        updateEmptyState();
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        activeOrderList.clear();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            try {
+                                // CORRECTION : Utiliser document.toObject() pour mapper automatiquement
+                                Order order = document.toObject(Order.class);
+
+                                // S'assurer que l'ID est défini
+                                if (order != null) {
+                                    order.setOrderId(document.getId());
+
+                                    // S'assurer que les champs sont correctement mappés
+                                    if (order.getCustomerName() == null || order.getCustomerName().isEmpty()) {
+                                        String deliveryName = document.getString("deliveryName");
+                                        order.setCustomerName(deliveryName != null ? deliveryName : "Client");
+                                    }
+
+                                    if (order.getDeliveryAddress() == null || order.getDeliveryAddress().isEmpty()) {
+                                        String address = document.getString("address");
+                                        order.setDeliveryAddress(address != null ? address : "Adresse inconnue");
+                                    }
+
+                                    // Debug
+                                    System.out.println("DEBUG - Commande active: " +
+                                            order.getOrderId() + " - " + order.getStatus() +
+                                            " - " + order.getCustomerName());
+
+                                    activeOrderList.add(order);
+                                }
+                            } catch (Exception e) {
+                                System.out.println("Erreur parsing commande: " + e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // CORRECTION : Trier manuellement par date
+                        java.util.Collections.sort(activeOrderList, (o1, o2) -> {
+                            if (o1.getOrderDate() != null && o2.getOrderDate() != null) {
+                                return o2.getOrderDate().compareTo(o1.getOrderDate());
+                            }
+                            return 0;
+                        });
+
+                        orderAdapter.notifyDataSetChanged();
+                        updateUI();
+
+                        System.out.println("DEBUG - Total commandes actives: " + activeOrderList.size());
+
                     } else {
-                        // Gérer l'erreur
-                        tvEmptyState.setText("Erreur de chargement");
-                        tvEmptyState.setVisibility(View.VISIBLE);
-                        activeOrdersRecyclerView.setVisibility(View.GONE);
+                        String errorMsg = "Erreur de chargement";
+                        if (task.getException() != null) {
+                            errorMsg += ": " + task.getException().getMessage();
+                            task.getException().printStackTrace();
+                        }
+                        showErrorState(errorMsg);
                     }
                 });
     }
 
-    private void updateActiveCount() {
-        TextView tvActiveCount = getView().findViewById(R.id.tv_active_count);
-        if (tvActiveCount != null) {
-            int count = activeOrderList.size();
-            String text = count + " livraison(s) active(s)";
-            tvActiveCount.setText(text);
-        }
-    }
+    private void updateUI() {
+        int count = activeOrderList.size();
 
-    private void updateEmptyState() {
-        if (activeOrderList.isEmpty()) {
-            tvEmptyState.setText("Aucune livraison en cours");
+        // Mettre à jour le compteur
+        if (tvActiveCount != null) {
+            tvActiveCount.setText(count + " livraison(s) active(s)");
+        }
+
+        // Gérer l'état vide/rempli
+        if (count == 0) {
+            tvEmptyState.setText("Aucune livraison active\n\nLes commandes en cours apparaîtront ici.");
             tvEmptyState.setVisibility(View.VISIBLE);
             activeOrdersRecyclerView.setVisibility(View.GONE);
         } else {
@@ -140,64 +194,67 @@ public class ActiveDeliveryFragment extends Fragment {
         }
     }
 
-    private void showOrderDetails(Order order) {
-        // Ouvrir les détails de la commande
-        // Intent intent = new Intent(getActivity(), OrderDetailsActivity.class);
-        // intent.putExtra("order_id", order.getOrderId());
-        // startActivity(intent);
+    private void showErrorState(String message) {
+        tvEmptyState.setText(message);
+        tvEmptyState.setVisibility(View.VISIBLE);
+        activeOrdersRecyclerView.setVisibility(View.GONE);
+    }
 
-        // Pour l'instant, afficher un toast
-        android.widget.Toast.makeText(getContext(),
-                "Détails de la commande: " + order.getOrderId(),
-                android.widget.Toast.LENGTH_SHORT).show();
+    private void showOrderDetails(Order order) {
+        // À implémenter
+        android.widget.Toast.makeText(
+                getContext(),
+                "Détails: " + order.getCustomerName(),
+                android.widget.Toast.LENGTH_SHORT
+        ).show();
     }
 
     private void startDelivery(Order order) {
-        // Marquer la commande comme "en cours de livraison"
+        String newStatus = "En cours";
+
         db.collection("orders").document(order.getOrderId())
-                .update("status", "in_progress")
+                .update("status", newStatus)
                 .addOnSuccessListener(aVoid -> {
-                    // Mettre à jour l'interface
+                    // Recharger
                     loadActiveDeliveries();
 
-                    // Afficher une notification
-                    android.widget.Toast.makeText(getContext(),
+                    android.widget.Toast.makeText(
+                            getContext(),
                             "Livraison commencée!",
-                            android.widget.Toast.LENGTH_SHORT).show();
-
-                    // Ici vous pourriez lancer la navigation GPS
-                    // startNavigation(order);
+                            android.widget.Toast.LENGTH_SHORT
+                    ).show();
                 })
                 .addOnFailureListener(e -> {
-                    android.widget.Toast.makeText(getContext(),
+                    android.widget.Toast.makeText(
+                            getContext(),
                             "Erreur: " + e.getMessage(),
-                            android.widget.Toast.LENGTH_SHORT).show();
+                            android.widget.Toast.LENGTH_SHORT
+                    ).show();
                 });
     }
 
     private void completeDelivery(Order order) {
-        // Marquer la commande comme "livrée"
         db.collection("orders").document(order.getOrderId())
                 .update(
-                        "status", "delivered",
+                        "status", "Livré",
                         "deliveryDate", new java.util.Date()
                 )
                 .addOnSuccessListener(aVoid -> {
-                    // Mettre à jour les statistiques du livreur
                     updateDeliveryStats();
-
-                    // Recharger la liste
                     loadActiveDeliveries();
 
-                    // Afficher une notification de succès
-                    android.widget.Toast.makeText(getContext(),
-                            "Livraison terminée avec succès!",
-                            android.widget.Toast.LENGTH_SHORT).show();
+                    android.widget.Toast.makeText(
+                            getContext(),
+                            "Livraison terminée!",
+                            android.widget.Toast.LENGTH_SHORT
+                    ).show();
                 })
                 .addOnFailureListener(e -> {
-                    android.widget.Toast.makeText(getContext(),
+                    android.widget.Toast.makeText(
+                            getContext(),
                             "Erreur: " + e.getMessage(),
-                            android.widget.Toast.LENGTH_SHORT).show();
+                            android.widget.Toast.LENGTH_SHORT
+                    ).show();
                 });
     }
 
@@ -207,62 +264,24 @@ public class ActiveDeliveryFragment extends Fragment {
 
         String userId = currentUser.getUid();
 
-        // Incrémenter le compteur de livraisons complétées
         db.collection("delivery_stats").document(userId)
-                .update(
-                        "completedDeliveries", com.google.firebase.firestore.FieldValue.increment(1),
-                        "currentProgress", com.google.firebase.firestore.FieldValue.increment(1),
-                        "lastUpdated", new java.util.Date()
-                )
-                .addOnSuccessListener(aVoid -> {
-                    // Statistiques mises à jour avec succès
-                    android.widget.Toast.makeText(getContext(),
-                            "Statistiques mises à jour",
-                            android.widget.Toast.LENGTH_SHORT).show();
-                })
+                .update("completedDeliveries",
+                        com.google.firebase.firestore.FieldValue.increment(1))
                 .addOnFailureListener(e -> {
-                    // En cas d'erreur, créer le document de stats s'il n'existe pas
-                    createDeliveryStats(userId);
+                    // Créer si n'existe pas
+                    java.util.Map<String, Object> stats = new java.util.HashMap<>();
+                    stats.put("userId", userId);
+                    stats.put("completedDeliveries", 1);
+                    stats.put("lastUpdated", new java.util.Date());
+
+                    db.collection("delivery_stats").document(userId)
+                            .set(stats, com.google.firebase.firestore.SetOptions.merge());
                 });
-    }
-
-    private void createDeliveryStats(String userId) {
-        // Créer un document de statistiques initial
-        java.util.Map<String, Object> stats = new java.util.HashMap<>();
-        stats.put("userId", userId);
-        stats.put("completedDeliveries", 1);
-        stats.put("monthlyGoal", 50);
-        stats.put("currentProgress", 1);
-        stats.put("rating", 5.0);
-        stats.put("successRate", 100.0);
-        stats.put("averageDeliveryTime", 0);
-        stats.put("onTimeDeliveries", 1);
-        stats.put("lastUpdated", new java.util.Date());
-
-        db.collection("delivery_stats").document(userId)
-                .set(stats)
-                .addOnSuccessListener(aVoid -> {
-                    android.widget.Toast.makeText(getContext(),
-                            "Statistiques initialisées",
-                            android.widget.Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void startNavigation(Order order) {
-        // Implémentation de la navigation GPS
-        // Cette méthode pourrait lancer Google Maps ou une autre application de navigation
-        /*
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + order.getLatitude() + "," + order.getLongitude());
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
-        */
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Recharger les données à chaque retour sur le fragment
         loadActiveDeliveries();
     }
 }

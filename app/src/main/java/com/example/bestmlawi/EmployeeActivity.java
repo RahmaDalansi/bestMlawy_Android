@@ -101,7 +101,7 @@ public class EmployeeActivity extends AppCompatActivity {
                     // selectedFragment = new SalesFragment();
                     Toast.makeText(EmployeeActivity.this, "Points de vente", Toast.LENGTH_SHORT).show();
                     title = "Points de vente";
-                } else if (itemId == R.id.nav_more) {
+                } else if (itemId == R.id.nav_menu) {
                     // Menu supplémentaire
                     Toast.makeText(EmployeeActivity.this, "Menu supplémentaire", Toast.LENGTH_SHORT).show();
                     title = "Menu";

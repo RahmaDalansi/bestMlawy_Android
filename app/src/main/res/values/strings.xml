@@ -15,5 +15,7 @@
     <string name="employees">Employees</string>
     <string name="orders">Orders</string>
     <string name="sales_point">Sales Point</string>
+    <string name="profile">Profile</string>
     <string name="menu">Menu</string>
+
 </resources>

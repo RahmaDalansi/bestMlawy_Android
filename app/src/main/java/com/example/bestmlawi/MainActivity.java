@@ -41,170 +41,86 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Vérifier l'authentification au démarrage
         checkAuthentication();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.appBarMain.toolbar);
-        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show();
-            }
-        });
+
+        // Cacher le FAB si non utilisé
+        if (binding.appBarMain.fab != null) {
+            binding.appBarMain.fab.setVisibility(View.GONE);
+        }
 
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
 
-        // Configuration de la Bottom Navigation
-        setupBottomNavigation();
+        // Configuration de la navigation
+        setupNavigation();
 
-        // Configuration de la Navigation Drawer avec TOUTES les destinations
-        // Note: Inclure uniquement les destinations qui sont dans nav_graph.xml
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-
-
-                R.id.nav_dashboard,
-                R.id.nav_collabs,
-                R.id.nav_orders,
-                R.id.nav_sales,
-                R.id.nav_more,
-                R.id.nav_profile)
-                .setOpenableLayout(drawer)
-                .build();
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-
-        // Configuration de la Navigation View
-        NavigationUI.setupWithNavController(navigationView, navController);
-
-        // Gérer le clic sur le menu dans la Navigation Drawer
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            // Gérer les clics sur les Activities séparément
-            if (itemId == R.id.nav_employee) {
-                openEmployeeConsultation();
-                drawer.closeDrawers();
-                return true;
-            } else if (itemId == R.id.nav_orders) {
-                openOrdersConsultation();
-                drawer.closeDrawers();
-                return true;
-
-            }
-
-            // Pour les autres items, mapper vers les fragments correspondants
-            try {
-                NavController navCtrl = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-
-                // Mapper les anciens IDs vers les nouveaux
-
-
-                drawer.closeDrawers();
-                return true;
-            } catch (Exception e) {
-                drawer.closeDrawers();
-                return false;
-            }
-        });
-
-
-
-        // Afficher le Dashboard par défaut au démarrage
+        // Afficher le Dashboard par défaut
         if (savedInstanceState == null) {
             showHomeFragment();
-            if (bottomNav != null) {
-                bottomNav.setSelectedItemId(R.id.nav_dashboard);
-            }
         }
     }
 
-    private void setupBottomNavigation() {
-        bottomNav = findViewById(R.id.bottom_navigation);
+    private void setupNavigation() {
+        bottomNav = findViewById(R.id.bottom_nav_view);
+
         if (bottomNav == null) {
-            Toast.makeText(this, "BottomNavigationView non trouvé", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "BottomNavigationView non trouvée", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Récupérer le NavController
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
 
-        // Configuration AppBarConfiguration pour les destinations de la bottom nav
-        AppBarConfiguration bottomAppBarConfiguration = new AppBarConfiguration.Builder(
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_dashboard,
-                R.id.nav_collabs,
+                R.id.nav_employee,
                 R.id.nav_orders,
                 R.id.nav_sales,
-                R.id.nav_more,
+                R.id.nav_menu,
                 R.id.nav_profile)
+                .setOpenableLayout(binding.drawerLayout)
                 .build();
 
-        // Setup avec NavController
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(binding.navView, navController);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
-        // Surcharger le comportement pour certains items spéciaux
-        bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int itemId = item.getItemId();
+        bottomNav.setVisibility(View.VISIBLE);
 
-                if (itemId == R.id.nav_more) {
-                    // Ouvrir le drawer navigation
-                    binding.drawerLayout.openDrawer(binding.navView);
-                    return true;
-                }
+        // PLUS BESOIN DE GÉRER MANUELLEMENT LES CLICKS
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
 
-                // Pour les items qui pointent vers des Activities
-                if (itemId == R.id.nav_employee) {
-                    openEmployeeConsultation();
-                    return true;
-                } else if (itemId == R.id.nav_orders) {
-                    openOrdersConsultation();
-                    return true;
-                }
-
-                // Laisser NavigationUI gérer les autres (fragments)
-                try {
-                    NavController navCtrl = Navigation.findNavController(MainActivity.this,
-                            R.id.nav_host_fragment_content_main);
-
-                    // Mapper si nécessaire
-                    if (itemId == R.id.nav_collabs) {
-                        navCtrl.navigate(R.id.nav_collabs);
-                        return true;
-                    } else if (itemId == R.id.nav_sales) {
-                        navCtrl.navigate(R.id.nav_sales);
-                        return true;
-                    } else if (itemId == R.id.nav_profile) {
-                        navCtrl.navigate(R.id.nav_profile);
-                        return true;
-                    } else {
-                        return NavigationUI.onNavDestinationSelected(item, navCtrl);
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Navigation error: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                    return false;
-                }
+            // Seule exception : ouvrir le drawer pour "Menu"
+            if (itemId == R.id.nav_menu) {
+                binding.drawerLayout.openDrawer(binding.navView);
+                return false; // Ne pas sélectionner
             }
+
+            // Pour tous les autres (Fragments), NavigationUI gère automatiquement
+            return NavigationUI.onNavDestinationSelected(item, navController);
         });
     }
+
 
     private void showHomeFragment() {
         try {
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            // Naviguer vers le dashboard
             navController.navigate(R.id.nav_dashboard);
+
+            // Sélectionner l'item dans la bottom nav
+            if (bottomNav != null) {
+                bottomNav.setSelectedItemId(R.id.nav_dashboard);
+            }
         } catch (Exception e) {
-            Toast.makeText(this, "Erreur navigation: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Erreur: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void openEmployeeConsultation() {
         // Vérifier l'authentification avant d'ouvrir Consultation
@@ -228,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Vérifier le rôle dans Firestore
+        // Vérifier le rôle dans Firestore (seulement si nécessaire)
         checkUserRole(currentUser.getUid());
     }
 
@@ -241,20 +157,18 @@ public class MainActivity extends AppCompatActivity {
                         if (document.exists()) {
                             String role = document.getString("role");
                             if (role == null || (!"gerant".equals(role) && !"admin".equals(role))) {
-                                // L'utilisateur n'est pas admin/gerant, rediriger
-                                Toast.makeText(MainActivity.this, "Accès réservé aux administrateurs", Toast.LENGTH_LONG).show();
-                                redirectToLogin();
+                                // L'utilisateur n'est pas admin/gerant
+                                Toast.makeText(MainActivity.this,
+                                        "Accès réservé aux administrateurs", Toast.LENGTH_LONG).show();
+                                // Vous pouvez choisir de rediriger ou juste montrer un message
                             }
-                            // Si c'est un admin/gerant, on reste sur MainActivity
                         } else {
-                            // Document utilisateur non trouvé
-                            Toast.makeText(MainActivity.this, "Profil utilisateur non trouvé", Toast.LENGTH_LONG).show();
-                            redirectToLogin();
+                            Toast.makeText(MainActivity.this,
+                                    "Profil utilisateur non trouvé", Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        // Erreur Firestore
-                        Toast.makeText(MainActivity.this, "Erreur de vérification", Toast.LENGTH_LONG).show();
-                        redirectToLogin();
+                        Toast.makeText(MainActivity.this,
+                                "Erreur de vérification", Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -303,10 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showNotifications() {
         Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
-        // Intent vers NotificationsActivity ou dialog
-        // Exemple:
-        // Intent intent = new Intent(this, NotificationsActivity.class);
-        // startActivity(intent);
+        // Vous pouvez implémenter une activité ou un dialog pour les notifications
     }
 
     @Override
@@ -319,11 +230,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Vérifier l'authentification à chaque retour sur l'activité
-        checkAuthentication();
 
-        // Remettre la sélection sur Dashboard quand on revient à MainActivity
+        // Vérifier l'authentification
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            redirectToLogin();
+        }
+
+        // S'assurer que la bottom nav est visible
         if (bottomNav != null) {
+            bottomNav.setVisibility(View.VISIBLE);
+            // Re-sélectionner l'item courant
             bottomNav.setSelectedItemId(R.id.nav_dashboard);
         }
     }
