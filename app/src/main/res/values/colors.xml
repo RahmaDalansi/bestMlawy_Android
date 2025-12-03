@@ -1,23 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors -->
+    <color name="primary">#FF6B6B</color>
+    <color name="primary_dark">#EE5A5A</color>
+    <color name="primary_light">#FF8C8C</color>
+    <color name="primary_variant">#FF5252</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#4ECDC4</color>
+    <color name="secondary_dark">#3DBBB4</color>
+    <color name="secondary_light">#7FDFD9</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+    
+    <!-- Background & Surface Colors -->
+    <color name="background">#FAFAFA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F5F5F5</color>
+    
+    <!-- Text Colors -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_background">#212121</color>
+    <color name="on_surface">#212121</color>
+    <color name="on_surface_variant">#757575</color>
+    
+    <!-- Gray Scale -->
+    <color name="gray_50">#FAFAFA</color>
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_400">#BDBDBD</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_900">#212121</color>
+    
+    <!-- Black & White -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    
+    <!-- Transparent -->
+    <color name="transparent">#00000000</color>
+    
+    <!-- Legacy Colors (for backward compatibility) -->
     <color name="purple_200">#FC868A</color>
     <color name="purple_500">#D32F2F</color>
     <color name="purple_700">#A90404</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="grey_text">#666666</color>
-    <color name="gray">#808080</color>
-    <color name="darker_gray">#606060</color>
-
-
-    <color name="card_background1">#E3F2FD</color>
-    <color name="card_background2">#E8F5E8</color>
-    <color name="card_background3">#FFF3E0</color>
-    <color name="card_background4">#FCE4EC</color>
-
-    <color name="card_red1">#FFEBEE</color>
+    <color name="teal_200">#4ECDC4</color>
+    <color name="teal_700">#3DBBB4</color>
+    <color name="grey_text">#757575</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="darker_gray">#616161</color>
     <color name="card_red2">#FFCDD2</color>
     <color name="card_red3">#EF9A9A</color>
     <color name="card_red4">#E57373</color>
@@ -39,7 +78,6 @@
     <!-- aya -->
     <color name="yellow_400">#FFD740</color>
     <color name="green_500">#4CAF50</color>
-    <color name="gray_200">#EEEEEE</color>
 
 
     <!--  rahma  -->
@@ -47,6 +85,22 @@
     <color name="red_dark">#B71C1C</color>
     <color name="gray_light">#F5F5F5</color>
     <color name="gray_medium">#BDBDBD</color>
+
+
+    <!-- Couleurs pour les graphiques -->
+    <color name="chart_bar">#4CAF50</color>
+    <color name="chart_line">#2196F3</color>
+    <color name="chart_line_light">#902196F3</color>
+    <color name="chart_pie_1">#4CAF50</color>
+    <color name="chart_pie_2">#2196F3</color>
+    <color name="chart_pie_3">#FF9800</color>
+    <color name="chart_pie_4">#9C27B0</color>
+    <color name="chart_pie_5">#F44336</color>
+
+    <!-- Couleurs pour les statuts -->
+
+    <color name="colorPrimary">#B02727</color>
+    <color name="colorPrimaryDark">#800202</color>
 
 
 </resources>

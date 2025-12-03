@@ -9,12 +9,9 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,20 +20,30 @@ import androidx.annotation.Nullable;
 import com.example.bestmlawi.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Modification extends Activity {
-    private EditText edtName, edtEmail, edtPhone, edtLocation;
-    private RadioGroup rgRole;
-    private RadioButton rbCollaborator, rbCoordinator, rbDeliver;
-    private Button btnCancel, btnUpdate, btnSelectImage;
-    private TextView txtEmployeeInfo;
+    private MaterialButton btnRetour, btnModifier, btnSelectImage;
+    private TextInputEditText edtName, edtEmail, edtPhone, edtAddress;
+    private AutoCompleteTextView spinnerPointDeVente;
+    private Chip cbCollaborator, cbCoordinator, cbDeliver;
+    private ChipGroup roleChipGroup;
     private ImageView imgProfile;
+
+    // Supprimé: private com.google.android.material.textview.MaterialTextView txtEmployeeInfo;
 
     private FirebaseFirestore db;
     private String employeeId = "";
@@ -44,6 +51,9 @@ public class Modification extends Activity {
     private String currentImageBase64 = "";
     private Uri selectedImageUri;
     private static final int PICK_IMAGE_REQUEST = 1;
+    private List<String> pointsDeVenteList = new ArrayList<>();
+    private ArrayAdapter<String> pointDeVenteAdapter;
+    private String selectedPointDeVente = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,14 +61,16 @@ public class Modification extends Activity {
         setContentView(R.layout.modification);
         initialize();
         setListeners();
+        loadSalesPoints();
         loadEmployeeData();
     }
 
     private void initialize() {
-        // Initialize TextViews
-        txtEmployeeInfo = findViewById(R.id.txtEmployeeInfo);
+        // Initialize Firebase
+        db = FirebaseFirestore.getInstance();
 
-        // Initialize ImageView and Button
+        // Initialize Views
+        // SUPPRIMÉ: txtEmployeeInfo = findViewById(R.id.txtEmployeeInfo);
         imgProfile = findViewById(R.id.imgProfile);
         btnSelectImage = findViewById(R.id.btnSelectImage);
 
@@ -66,42 +78,65 @@ public class Modification extends Activity {
         edtName = findViewById(R.id.edtName);
         edtEmail = findViewById(R.id.edtEmail);
         edtPhone = findViewById(R.id.edtPhone);
-        edtLocation = findViewById(R.id.edtLocation);
+        edtAddress = findViewById(R.id.edtAddress);
+        spinnerPointDeVente = findViewById(R.id.spinnerPointDeVente);
 
-        // Initialize RadioButtons
-        rgRole = findViewById(R.id.rgRole);
-        rbCollaborator = findViewById(R.id.rbCollaborator);
-        rbCoordinator = findViewById(R.id.rbCoordinator);
-        rbDeliver = findViewById(R.id.rbDeliver);
+        // Initialize Chips
+        roleChipGroup = findViewById(R.id.roleChipGroup);
+        cbCollaborator = findViewById(R.id.cbCollaborator);
+        cbCoordinator = findViewById(R.id.cbCoordinator);
+        cbDeliver = findViewById(R.id.cbDeliver);
 
-        // Initialize buttons
-        btnCancel = findViewById(R.id.btnRetour);
-        btnUpdate = findViewById(R.id.btnModifier);
+        // Configure chip behavior for single selection
+        roleChipGroup.setSingleSelection(true);
 
-        db = FirebaseFirestore.getInstance();
-    }
-
-    private void setListeners() {
-        btnCancel.setOnClickListener(new View.OnClickListener() {
+        // Ajouter le listener pour gérer les couleurs des chips
+        roleChipGroup.setOnCheckedStateChangeListener(new ChipGroup.OnCheckedStateChangeListener() {
             @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+            public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
+                // Réinitialiser la couleur de tous les chips
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    View child = group.getChildAt(i);
+                    if (child instanceof Chip) {
+                        Chip chip = (Chip) child;
+                        chip.setChipBackgroundColorResource(android.R.color.transparent);
+                        chip.setTextColor(getResources().getColor(R.color.purple_500));
+                        chip.setChipIconTintResource(R.color.purple_500);
+                    }
+                }
 
-        btnUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (validate()) {
-                    updateEmployee();
+                // Appliquer la couleur au chip sélectionné
+                if (!checkedIds.isEmpty()) {
+                    Chip selectedChip = group.findViewById(checkedIds.get(0));
+                    if (selectedChip != null) {
+                        selectedChip.setChipBackgroundColorResource(R.color.purple_500);
+                        selectedChip.setTextColor(getResources().getColor(android.R.color.white));
+                        selectedChip.setChipIconTintResource(android.R.color.white);
+                    }
                 }
             }
         });
 
-        btnSelectImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectImageFromGallery();
+        // Initialize buttons
+        btnRetour = findViewById(R.id.btnRetour);
+        btnModifier = findViewById(R.id.btnModifier);
+
+        // Initialize adapter for Point de Vente
+        pointDeVenteAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line
+        );
+        spinnerPointDeVente.setAdapter(pointDeVenteAdapter);
+    }
+
+    private void setListeners() {
+        btnRetour.setOnClickListener(v -> finish());
+
+        btnSelectImage.setOnClickListener(v -> selectImageFromGallery());
+
+        btnModifier.setOnClickListener(v -> {
+            if (validate()) {
+                updateEmployee();
             }
         });
     }
@@ -121,6 +156,29 @@ public class Modification extends Activity {
         }
     }
 
+    private void loadSalesPoints() {
+        db.collection("SalesPoints")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        pointsDeVenteList.clear();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String nomPointDeVente = document.getString("name");
+                            if (nomPointDeVente != null) {
+                                pointsDeVenteList.add(nomPointDeVente);
+                            }
+                        }
+
+                        pointDeVenteAdapter.clear();
+                        pointDeVenteAdapter.addAll(pointsDeVenteList);
+                        pointDeVenteAdapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(this, "Erreur lors du chargement des points de vente", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void loadEmployeeData() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("EMPLOYEE_ID")) {
@@ -131,19 +189,37 @@ public class Modification extends Activity {
             String location = intent.getStringExtra("EMPLOYEE_LOCATION");
             String email = intent.getStringExtra("EMPLOYEE_EMAIL");
             String phone = intent.getStringExtra("EMPLOYEE_PHONE");
+            String address = intent.getStringExtra("EMPLOYEE_ADDRESS");
             String imageUrl = intent.getStringExtra("EMPLOYEE_IMAGE_URL");
+
+            // Debug: Afficher les données reçues
+            Toast.makeText(this, "Données reçues: " +
+                            "Name: " + employeeName +
+                            ", Email: " + email +
+                            ", Phone: " + phone +
+                            ", Address: " + address +
+                            ", Location: " + location,
+                    Toast.LENGTH_LONG).show();
 
             // Store current image
             currentImageBase64 = imageUrl != null ? imageUrl : "";
-
-            // Display employee information
-            txtEmployeeInfo.setText("Editing: " + employeeName);
+            selectedPointDeVente = location != null ? location : "";
 
             // Fill fields with existing data
             edtName.setText(employeeName);
             edtEmail.setText(email != null ? email : "");
             edtPhone.setText(phone != null ? phone : "");
-            edtLocation.setText(location != null ? location : "");
+
+            // CORRECTION: Afficher l'adresse si elle existe, sinon afficher location
+            if (address != null && !address.isEmpty()) {
+                edtAddress.setText(address);
+            } else if (location != null && !location.isEmpty()) {
+                edtAddress.setText(location); // Utiliser location comme fallback
+            } else {
+                edtAddress.setText("");
+            }
+
+            spinnerPointDeVente.setText(selectedPointDeVente);
 
             // Load existing image if available
             if (currentImageBase64 != null && !currentImageBase64.isEmpty() && currentImageBase64.length() > 100) {
@@ -161,20 +237,36 @@ public class Modification extends Activity {
             if (role != null) {
                 switch (role.toLowerCase()) {
                     case "collaborator":
-                        rbCollaborator.setChecked(true);
+                        cbCollaborator.setChecked(true);
+                        // Appliquer la couleur programmatiquement
+                        cbCollaborator.setChipBackgroundColorResource(R.color.purple_500);
+                        cbCollaborator.setTextColor(getResources().getColor(android.R.color.white));
+                        cbCollaborator.setChipIconTintResource(android.R.color.white);
                         break;
                     case "coordinator":
-                        rbCoordinator.setChecked(true);
+                        cbCoordinator.setChecked(true);
+                        cbCoordinator.setChipBackgroundColorResource(R.color.purple_500);
+                        cbCoordinator.setTextColor(getResources().getColor(android.R.color.white));
+                        cbCoordinator.setChipIconTintResource(android.R.color.white);
                         break;
                     case "deliver":
-                        rbDeliver.setChecked(true);
+                        cbDeliver.setChecked(true);
+                        cbDeliver.setChipBackgroundColorResource(R.color.purple_500);
+                        cbDeliver.setTextColor(getResources().getColor(android.R.color.white));
+                        cbDeliver.setChipIconTintResource(android.R.color.white);
                         break;
                     default:
-                        rbCollaborator.setChecked(true);
+                        cbCollaborator.setChecked(true);
+                        cbCollaborator.setChipBackgroundColorResource(R.color.purple_500);
+                        cbCollaborator.setTextColor(getResources().getColor(android.R.color.white));
+                        cbCollaborator.setChipIconTintResource(android.R.color.white);
                         break;
                 }
             } else {
-                rbCollaborator.setChecked(true);
+                cbCollaborator.setChecked(true);
+                cbCollaborator.setChipBackgroundColorResource(R.color.purple_500);
+                cbCollaborator.setTextColor(getResources().getColor(android.R.color.white));
+                cbCollaborator.setChipIconTintResource(android.R.color.white);
             }
         } else {
             Toast.makeText(this, "Error: No employee selected", Toast.LENGTH_SHORT).show();
@@ -183,33 +275,38 @@ public class Modification extends Activity {
     }
 
     private void updateEmployee() {
-        // Validate fields
-        if (!validate()) {
-            return;
-        }
-
         // Get new values
         String name = edtName.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
-        String location = edtLocation.getText().toString().trim();
+        String address = edtAddress.getText().toString().trim();
+        String selectedPointDeVente = spinnerPointDeVente.getText().toString().trim();
         String role = getSelectedRole();
+
+        // Validation
+        if (selectedPointDeVente.isEmpty()) {
+            Toast.makeText(this, "Veuillez sélectionner un point de vente", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Convertir l'image en Base64 si une nouvelle image est sélectionnée
+        String imageBase64 = currentImageBase64;
+        if (selectedImageUri != null) {
+            imageBase64 = convertImageToBase64();
+        }
 
         // Create updates
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
         updates.put("email", email);
         updates.put("phoneNumber", phone);
-        updates.put("location", location);
+        updates.put("address", address);
         updates.put("role", role);
-
-        // Handle image update
-        if (selectedImageUri != null) {
-            String newImageBase64 = convertImageToBase64();
-            if (newImageBase64 != null) {
-                updates.put("image", newImageBase64);
-            }
-        }
+        updates.put("location", selectedPointDeVente);
+        updates.put("point_of_sale_id", ""); // Même que dans Ajout
+        updates.put("image", imageBase64 != null ? imageBase64 : "");
+        // Note: Nous ne modifions pas la date d'embauche lors de la modification
+        // updates.put("hiredDate", FieldValue.serverTimestamp()); // Utilisez ceci si vous voulez mettre à jour la date
 
         // Update in Firebase
         db.collection("Employees").document(employeeId)
@@ -220,10 +317,7 @@ public class Modification extends Activity {
                         Toast.makeText(Modification.this, "Employee updated successfully", Toast.LENGTH_SHORT).show();
 
                         // Redirect to Consultation
-                        Intent intent = new Intent(Modification.this, Consultation.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
+                        redirectToConsultation();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -255,35 +349,63 @@ public class Modification extends Activity {
     }
 
     private boolean validate() {
+        boolean isValid = true;
+
         if (edtName.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
-            return false;
+            edtName.setError("Name is required");
+            isValid = false;
         }
 
         if (edtEmail.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please enter an email", Toast.LENGTH_SHORT).show();
-            return false;
+            edtEmail.setError("Email is required");
+            isValid = false;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(edtEmail.getText().toString().trim()).matches()) {
+            edtEmail.setError("Please enter a valid email");
+            isValid = false;
         }
 
-        if (rgRole.getCheckedRadioButtonId() == -1) {
+        if (edtPhone.getText().toString().trim().isEmpty()) {
+            edtPhone.setError("Phone number is required");
+            isValid = false;
+        }
+
+        if (edtAddress.getText().toString().trim().isEmpty()) {
+            edtAddress.setError("Address is required");
+            isValid = false;
+        }
+
+        if (spinnerPointDeVente.getText().toString().trim().isEmpty()) {
+            spinnerPointDeVente.setError("Please select a point de vente");
+            isValid = false;
+        }
+
+        if (getSelectedRole().isEmpty()) {
             Toast.makeText(this, "Please select a role", Toast.LENGTH_SHORT).show();
-            return false;
+            isValid = false;
         }
 
-        return true;
+        return isValid;
     }
 
     private String getSelectedRole() {
-        int selectedId = rgRole.getCheckedRadioButtonId();
+        // Vérifier quel chip est sélectionné
+        int selectedId = roleChipGroup.getCheckedChipId();
 
-        if (selectedId == R.id.rbCollaborator) {
+        if (selectedId == R.id.cbCollaborator) {
             return "collaborator";
-        } else if (selectedId == R.id.rbCoordinator) {
+        } else if (selectedId == R.id.cbCoordinator) {
             return "coordinator";
-        } else if (selectedId == R.id.rbDeliver) {
+        } else if (selectedId == R.id.cbDeliver) {
             return "deliver";
         }
 
-        return "collaborator";
+        return "";
+    }
+
+    private void redirectToConsultation() {
+        Intent intent = new Intent(Modification.this, Consultation.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 }

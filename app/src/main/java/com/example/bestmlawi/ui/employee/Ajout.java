@@ -8,19 +8,24 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.bestmlawi.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,9 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 public class Ajout extends Activity {
-    private Button btnRetour, btnAjouter, btnSelectImage;
-    private EditText edtName, edtEmail, edtPhone, edtAddress, edtWorkLocation;
-    private CheckBox cbCollaborator, cbCoordinator, cbDeliver;
+    private MaterialButton btnRetour, btnAjouter, btnSelectImage;
+    private TextInputEditText edtName, edtEmail, edtPhone, edtAddress;
+    private AutoCompleteTextView spinnerPointDeVente;
+    private Chip cbCollaborator, cbCoordinator, cbDeliver;
+    private ChipGroup roleChipGroup;
     private ImageView imgProfile;
     private FirebaseFirestore db;
 
@@ -48,22 +55,87 @@ public class Ajout extends Activity {
     }
 
     private void initialiser() {
+        // Initialiser Firebase
+        db = FirebaseFirestore.getInstance();
+
+        // Initialiser les vues
         btnRetour = findViewById(R.id.btnRetour);
         btnAjouter = findViewById(R.id.btnAjouter);
         btnSelectImage = findViewById(R.id.btnSelectImage);
         imgProfile = findViewById(R.id.imgProfile);
 
+        // Initialiser les champs de texte
         edtName = findViewById(R.id.edtName);
         edtEmail = findViewById(R.id.edtEmail);
         edtPhone = findViewById(R.id.edtPhone);
         edtAddress = findViewById(R.id.edtAddress);
-        edtWorkLocation = findViewById(R.id.edtWorkLocation);
+        spinnerPointDeVente = findViewById(R.id.spinnerPointDeVente);
 
+        // Initialiser les chips de rôle
+        roleChipGroup = findViewById(R.id.roleChipGroup);
         cbCollaborator = findViewById(R.id.cbCollaborator);
         cbCoordinator = findViewById(R.id.cbCoordinator);
         cbDeliver = findViewById(R.id.cbDeliver);
 
-        db = FirebaseFirestore.getInstance();
+        // CORRECTION: Configurer le comportement des chips pour être EXCLUSIFS (single selection = true)
+        roleChipGroup.setSingleSelection(true);
+
+        // Ajouter le listener pour gérer les couleurs des chips (comme dans Modification)
+        roleChipGroup.setOnCheckedStateChangeListener(new ChipGroup.OnCheckedStateChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
+                // Réinitialiser la couleur de tous les chips
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    View child = group.getChildAt(i);
+                    if (child instanceof Chip) {
+                        Chip chip = (Chip) child;
+                        chip.setChipBackgroundColorResource(android.R.color.transparent);
+                        chip.setTextColor(getResources().getColor(R.color.purple_500));
+                        chip.setChipIconTintResource(R.color.purple_500);
+                    }
+                }
+
+                // Appliquer la couleur au chip sélectionné
+                if (!checkedIds.isEmpty()) {
+                    Chip selectedChip = group.findViewById(checkedIds.get(0));
+                    if (selectedChip != null) {
+                        selectedChip.setChipBackgroundColorResource(R.color.purple_500);
+                        selectedChip.setTextColor(getResources().getColor(android.R.color.white));
+                        selectedChip.setChipIconTintResource(android.R.color.white);
+                    }
+                }
+            }
+        });
+
+        // Charger les points de vente depuis Firebase
+        loadSalesPoints();
+    }
+
+    private void loadSalesPoints() {
+        db.collection("SalesPoints")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> pointsDeVente = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String nomPointDeVente = document.getString("name");
+                            if (nomPointDeVente != null) {
+                                pointsDeVente.add(nomPointDeVente);
+                            }
+                        }
+
+                        // Créer un adaptateur pour l'AutoCompleteTextView
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                this,
+                                android.R.layout.simple_dropdown_item_1line,
+                                pointsDeVente
+                        );
+                        spinnerPointDeVente.setAdapter(adapter);
+                    } else {
+                        Toast.makeText(this, "Erreur lors du chargement des points de vente", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void ecouteurs() {
@@ -94,9 +166,15 @@ public class Ajout extends Activity {
         String email = edtEmail.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
         String address = edtAddress.getText().toString().trim();
-        String workLocation = edtWorkLocation.getText().toString().trim();
+        String selectedPointDeVente = spinnerPointDeVente.getText().toString().trim();
 
-        String role = getSelectedRole(); // Changé pour retourner un seul rôle
+        // Vérifier si un point de vente a été sélectionné
+        if (selectedPointDeVente.isEmpty()) {
+            Toast.makeText(this, "Veuillez sélectionner un point de vente", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String role = getSelectedRole();
 
         // Validation
         if (name.isEmpty()) {
@@ -111,7 +189,8 @@ public class Ajout extends Activity {
             edtPhone.setError("Phone number is required");
             return;
         }
-        if (role.isEmpty()) {
+        // CORRECTION: Vérification plus précise du rôle
+        if (role.isEmpty() || roleChipGroup.getCheckedChipId() == View.NO_ID) {
             Toast.makeText(this, "Please select a role", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -128,9 +207,9 @@ public class Ajout extends Activity {
         employee.setEmail(email);
         employee.setPhoneNumber(phone);
         employee.setRole(role);
-        employee.setLocation(workLocation);
+        employee.setLocation(selectedPointDeVente);
         employee.setHiredDate(new Date());
-        employee.setPointOfSaleId(""); // Vous pouvez modifier selon vos besoins
+        employee.setPointOfSaleId(""); // Vous pouvez stocker l'ID du point de vente ici si nécessaire
         employee.setImageUrl(imageBase64 != null ? imageBase64 : "");
 
         // Préparer les données pour Firestore
@@ -173,21 +252,22 @@ public class Ajout extends Activity {
     }
 
     private String getSelectedRole() {
-        // Retourne un seul rôle (le premier coché)
-        if (cbCollaborator.isChecked()) return "collaborator";
-        if (cbCoordinator.isChecked()) return "coordinator";
-        if (cbDeliver.isChecked()) return "deliver";
+        // Vérifier quel chip est sélectionné
+        int selectedId = roleChipGroup.getCheckedChipId();
+
+        if (selectedId == R.id.cbCollaborator) {
+            return "collaborator";
+        } else if (selectedId == R.id.cbCoordinator) {
+            return "coordinator";
+        } else if (selectedId == R.id.cbDeliver) {
+            return "deliver";
+        }
+
         return "";
     }
 
-    private List<String> getSelectedRoles() {
-        // Méthode conservée pour compatibilité, mais utilise getSelectedRole() maintenant
-        List<String> selectedRoles = new ArrayList<>();
-        if (cbCollaborator.isChecked()) selectedRoles.add("collaborator");
-        if (cbCoordinator.isChecked()) selectedRoles.add("coordinator");
-        if (cbDeliver.isChecked()) selectedRoles.add("deliver");
-        return selectedRoles;
-    }
+    // Méthode supprimée car vous utilisez la sélection unique
+    // private List<String> getSelectedRoles() { ... }
 
     private String convertImageToBase64() {
         try {
@@ -217,15 +297,37 @@ public class Ajout extends Activity {
     }
 
     private void clearFields() {
-        edtName.setText("");
-        edtEmail.setText("");
-        edtPhone.setText("");
-        edtAddress.setText("");
-        edtWorkLocation.setText("");
-        cbCollaborator.setChecked(false);
-        cbCoordinator.setChecked(false);
-        cbDeliver.setChecked(false);
-        imgProfile.setImageResource(R.drawable.ic_person_placeholder);
+        // Réinitialiser les champs de texte
+        if (edtName != null) edtName.setText("");
+        if (edtEmail != null) edtEmail.setText("");
+        if (edtPhone != null) edtPhone.setText("");
+        if (edtAddress != null) edtAddress.setText("");
+
+        // Réinitialiser la sélection des rôles
+        roleChipGroup.clearCheck();
+
+        // Réinitialiser aussi les couleurs des chips
+        for (int i = 0; i < roleChipGroup.getChildCount(); i++) {
+            View child = roleChipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                Chip chip = (Chip) child;
+                chip.setChipBackgroundColorResource(android.R.color.transparent);
+                chip.setTextColor(getResources().getColor(R.color.purple_500));
+                chip.setChipIconTintResource(R.color.purple_500);
+            }
+        }
+
+        // Réinitialiser l'image de profil
+        if (imgProfile != null) {
+            imgProfile.setImageResource(R.drawable.ic_person_placeholder);
+        }
+
+        // Réinitialiser l'URI de l'image sélectionnée
         selectedImageUri = null;
+
+        // Réinitialiser le sélecteur de point de vente
+        if (spinnerPointDeVente != null) {
+            spinnerPointDeVente.setText("");
+        }
     }
 }

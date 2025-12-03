@@ -12,7 +12,7 @@ public class Employee {
     private String point_of_sale_id;
     private String location;
     private String image;
-    private String address; // Ajout du champ address
+    private String address;
 
     public Employee() {
         // Constructeur vide nécessaire pour Firestore

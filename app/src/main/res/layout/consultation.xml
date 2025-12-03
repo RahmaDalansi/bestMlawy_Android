@@ -51,7 +51,7 @@
                         android:layout_height="wrap_content"
                         android:text="+ Add Employee"
                         android:background="@drawable/button_grey"
-                        android:textColor="#666666"
+                        android:textColor="@color/white"
                         android:textSize="14sp"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="5dp"
@@ -89,7 +89,7 @@
                             android:layout_weight="1"
                             android:text="Collaborator"
                             android:textSize="12sp"
-                            android:textColor="#666666"
+                            android:textColor="@color/white"
                             android:background="@drawable/filter_button_default"
                             android:layout_marginEnd="4dp"
                             android:textAllCaps="false" />
@@ -101,7 +101,7 @@
                             android:layout_weight="1"
                             android:text="Deliver"
                             android:textSize="12sp"
-                            android:textColor="#666666"
+                            android:textColor="@color/white"
                             android:background="@drawable/filter_button_default"
                             android:layout_marginEnd="4dp"
                             android:textAllCaps="false" />
@@ -113,7 +113,7 @@
                             android:layout_weight="1"
                             android:text="Coordinator"
                             android:textSize="12sp"
-                            android:textColor="#666666"
+                            android:textColor="@color/white"
                             android:background="@drawable/filter_button_default"
                             android:textAllCaps="false" />
 

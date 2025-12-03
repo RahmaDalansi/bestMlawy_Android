@@ -68,7 +68,7 @@ public class AssignOrderActivity extends AppCompatActivity {
     }
 
     private void loadSalesPoints() {
-        db.collection("Sale_Point") // ✅ Nom exact de la collection (avec majuscule)
+        db.collection("SalesPoints") // ✅ Nom exact de la collection (avec majuscule)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

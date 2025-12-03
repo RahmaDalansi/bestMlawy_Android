@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Consultation extends Fragment {
     private ListView lstEmployee;
@@ -56,6 +59,8 @@ public class Consultation extends Fragment {
 
     private String selectedRole = "";
     private boolean filtersApplied = false;
+
+    private Map<String, String> nameToSalesPointId = new HashMap<>();
 
     @Nullable
     @Override
@@ -149,6 +154,54 @@ public class Consultation extends Fragment {
         mAuth = FirebaseAuth.getInstance();
 
         updateApplyClearButton();
+    }
+
+    private void loadSalesPoints() {
+        db.collection("SalesPoints") // ✅ Nom exact de la collection (avec majuscule)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            // Liste pour stocker les noms des points de vente
+                            List<String> salesPointNames = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                String name = doc.getString("name"); // ✅ Champ "name", pas "Sale_Point"
+                                String id = doc.getId();
+
+                                if (name != null && !name.isEmpty()) {
+                                    salesPointNames.add(name);
+                                    // Vous pouvez stocker le mapping nom → ID si nécessaire
+                                    // nameToSalesPointId.put(name, id);
+                                }
+                            }
+
+                            // Mettre à jour l'interface utilisateur si nécessaire
+                            // Par exemple, pour afficher dans un spinner ou une liste
+                            Toast.makeText(getContext(),
+                                    "Points de vente chargés : " + salesPointNames.size(),
+                                    Toast.LENGTH_SHORT).show();
+
+                            // Log pour debug
+                            if (salesPointNames.isEmpty()) {
+                                Log.d("Consultation", "Aucun point de vente trouvé");
+                            } else {
+                                Log.d("Consultation", "Points de vente trouvés : " + salesPointNames);
+                            }
+
+                        } else {
+                            String errorMsg = "Erreur chargement points de vente: " +
+                                    (task.getException() != null ?
+                                            task.getException().getMessage() : "Erreur inconnue");
+                            Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+
+                            if (task.getException() != null) {
+                                task.getException().printStackTrace();
+                            }
+                        }
+                    }
+                });
     }
 
     private void setupListeners() {
@@ -513,5 +566,6 @@ public class Consultation extends Fragment {
     public void onResume() {
         super.onResume();
         remplir();
+        loadSalesPoints();
     }
 }
