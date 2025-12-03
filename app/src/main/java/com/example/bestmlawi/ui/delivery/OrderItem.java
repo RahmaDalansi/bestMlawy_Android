@@ -36,10 +36,10 @@ public class OrderItem {
     }
 
     public String getFormattedPrice() {
-        return String.format("%.2f €", price);
+        return String.format("%.2f DT", price);
     }
 
     public String getFormattedTotalPrice() {
-        return String.format("%.2f €", getTotalPrice());
+        return String.format("%.2f DT", getTotalPrice());
     }
 }

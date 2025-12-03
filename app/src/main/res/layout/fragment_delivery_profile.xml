@@ -27,20 +27,31 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- Photo de profil -->
-                <ImageView
-                    android:id="@+id/iv_delivery_photo"
+                <!-- Conteneur pour l'image de profil circulaire -->
+                <!-- Remplacer le FrameLayout par ceci -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_delivery_person"
-                    android:background="@drawable/circle_background"
-                    android:padding="8dp"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="40dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <!-- Image de profil circulaire -->
+                    <ImageView
+                        android:id="@+id/delivery_photo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_delivery_person"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Photo de profil" />
+
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Nom -->
                 <TextView
-                    android:id="@+id/tv_delivery_name"
+                    android:id="@+id/delivery_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Nom du Livreur"
@@ -52,7 +63,7 @@
 
                 <!-- Rôle -->
                 <TextView
-                    android:id="@+id/tv_delivery_role"
+                    android:id="@+id/delivery_role"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Livreur"
@@ -93,7 +104,7 @@
                         android:layout_marginEnd="12dp" />
 
                     <TextView
-                        android:id="@+id/tv_delivery_email"
+                        android:id="@+id/delivery_email"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -118,7 +129,7 @@
                         android:layout_marginEnd="12dp" />
 
                     <TextView
-                        android:id="@+id/tv_delivery_phone"
+                        android:id="@+id/delivery_phone"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -143,7 +154,7 @@
                         android:layout_marginEnd="12dp" />
 
                     <TextView
-                        android:id="@+id/tv_delivery_address"
+                        android:id="@+id/delivery_address"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -164,6 +175,7 @@
                     android:layout_marginTop="8dp" />
 
             </LinearLayout>
+
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -217,7 +229,7 @@
 
                 <!-- Message d'information -->
                 <TextView
-                    android:id="@+id/tv_location_status"
+                    android:id="@+id/location_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Désactivé - Activez pour partager votre position"
@@ -298,7 +310,7 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
-                        android:id="@+id/tv_current_coordinates"
+                        android:id="@+id/current_coordinates"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Position: Chargement..."
@@ -406,7 +418,7 @@
 
                 <!-- Statistiques détaillées -->
                 <TextView
-                    android:id="@+id/tv_delivery_stats"
+                    android:id="@+id/delivery_stats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Chargement des statistiques..."
@@ -488,7 +500,7 @@
                             android:textColor="#666666" />
 
                         <TextView
-                            android:id="@+id/tv_progress"
+                            android:id="@+id/progress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0/50"

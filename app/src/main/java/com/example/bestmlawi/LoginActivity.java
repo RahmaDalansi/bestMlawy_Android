@@ -15,6 +15,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,12 +31,15 @@ public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
     private static final String TAG = "LoginActivity";
 
-    private EditText editTextEmail, editTextPassword;
+    private TextInputEditText editTextEmail, editTextPassword; // Changé de EditText à TextInputEditText
     private Button buttonLogin;
-    private TextView buttonGoogle, textCreateAccount, textForgotPassword;
+    private TextView buttonGoogle, textForgotPassword;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private GoogleSignInClient googleSignInClient;
+
+    // Ajouter la déclaration pour TextInputLayout si nécessaire
+    private TextInputLayout textInputLayoutEmail, textInputLayoutPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +76,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
+        // Changé de EditText à TextInputEditText
         editTextEmail = findViewById(R.id.editTextEmail);
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonLogin = findViewById(R.id.buttonLogin);
         buttonGoogle = findViewById(R.id.buttonGoogle);
-        textCreateAccount = findViewById(R.id.textCreateAccount);
         textForgotPassword = findViewById(R.id.textForgotPassword);
+
+        // Optionnel: si vous voulez accéder aux TextInputLayout
+        //textInputLayoutEmail = findViewById(R.id.textInputLayoutEmail);
+        textInputLayoutPassword = findViewById(R.id.textInputLayoutPassword);
     }
 
     private void setupClickListeners() {
@@ -88,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
             Log.d(TAG, "Bouton Google cliqué");
             signInWithGoogle();
         });
-        textCreateAccount.setOnClickListener(v -> createAccount());
+
         textForgotPassword.setOnClickListener(v -> forgotPassword());
     }
 
@@ -97,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "Vérification utilisateur courant: " + (currentUser != null ? currentUser.getEmail() : "null"));
 
         if (currentUser != null) {
-            // Vérifier le rôle de l'utilisateur
+            // MODIFICATION: Vérifier d'abord dans Employees, puis dans users
             checkUserRoleAndRedirect(currentUser.getUid());
         }
     }
@@ -120,12 +129,16 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
                             Log.d(TAG, "Utilisateur connecté: " + user.getEmail() + ", UID: " + user.getUid());
+                            // MODIFICATION: Vérifier d'abord dans Employees
                             checkUserRoleAndRedirect(user.getUid());
                         }
                     } else {
                         Log.e(TAG, "Échec connexion email: " + task.getException().getMessage());
-                        Toast.makeText(LoginActivity.this, "Échec de l'authentification: " +
-                                task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        String errorMessage = task.getException().getMessage();
+                        if (errorMessage.contains("invalid credential") || errorMessage.contains("wrong password")) {
+                            errorMessage = "Email ou mot de passe incorrect";
+                        }
+                        Toast.makeText(LoginActivity.this, "Échec de l'authentification: " + errorMessage, Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -179,9 +192,8 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
                             Log.d(TAG, "Utilisateur Google connecté dans Auth: " + user.getEmail() + ", UID: " + user.getUid());
-
-                            // Maintenant, créer ou vérifier l'utilisateur dans Firestore
-                            createOrUpdateUserInFirestore(user);
+                            // MODIFICATION: Pour Google, vérifier d'abord dans Employees
+                            checkUserRoleAndRedirect(user.getUid());
                         }
                     } else {
                         Log.e(TAG, "Échec authentification Google Firebase: " +
@@ -192,158 +204,109 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void createOrUpdateUserInFirestore(FirebaseUser user) {
-        Log.d(TAG, "Création/Mise à jour utilisateur dans Firestore: " + user.getUid());
+    // NOUVELLE MÉTHODE: Vérifier d'abord dans Employees, puis dans users
+    private void checkUserRoleAndRedirect(String userId) {
+        Log.d(TAG, "Vérification du rôle pour l'utilisateur: " + userId);
 
-        // Vérifier d'abord si l'utilisateur existe déjà
-        db.collection("users").document(user.getUid())
+        // ÉTAPE 1: Chercher d'abord dans la collection "Employees"
+        db.collection("Employees").document(userId)
                 .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            Log.d(TAG, "Utilisateur existe déjà dans Firestore, mise à jour des données");
-                            // Mettre à jour les informations existantes
-                            updateUserInFirestore(user, document);
+                .addOnCompleteListener(employeesTask -> {
+                    if (employeesTask.isSuccessful()) {
+                        DocumentSnapshot employeeDoc = employeesTask.getResult();
+                        if (employeeDoc.exists()) {
+                            // Utilisateur trouvé dans Employees
+                            String role = employeeDoc.getString("role");
+                            String name = employeeDoc.getString("name");
+                            Log.d(TAG, "Utilisateur trouvé dans Employees - Rôle: " + role + ", Nom: " + name);
+
+                            // Rediriger selon le rôle
+                            if (role != null) {
+                                redirectBasedOnRole(role, "employee");
+                            } else {
+                                // Rôle par défaut si non défini
+                                Log.d(TAG, "Aucun rôle défini, utilisation du rôle par défaut 'collaborator'");
+                                redirectBasedOnRole("collaborator", "employee");
+                            }
                         } else {
-                            Log.d(TAG, "Nouvel utilisateur, création dans Firestore");
-                            // Créer un nouvel utilisateur
-                            createNewUserInFirestore(user);
+                            // ÉTAPE 2: Si non trouvé dans Employees, chercher dans "users"
+                            Log.d(TAG, "Utilisateur non trouvé dans Employees, vérification dans users...");
+                            checkInUsersCollection(userId);
                         }
                     } else {
-                        Log.e(TAG, "Erreur vérification Firestore: " + task.getException().getMessage());
-                        Toast.makeText(this, "Erreur de vérification", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Erreur vérification Employees: " + employeesTask.getException().getMessage());
+                        // En cas d'erreur, essayer dans users
+                        checkInUsersCollection(userId);
                     }
                 });
     }
 
-    private void createNewUserInFirestore(FirebaseUser user) {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", user.getUid());
-        userData.put("name", user.getDisplayName() != null ? user.getDisplayName() : "Utilisateur Google");
-        userData.put("email", user.getEmail());
-        userData.put("role", "employee"); // Rôle par défaut
-        userData.put("phoneNumber", "");
-        userData.put("address", "");
-        userData.put("city", "");
-        userData.put("country", "");
-        userData.put("gender", "");
-        userData.put("job", "");
-        userData.put("isActive", true);
-        userData.put("active", true);
-        userData.put("createdAt", System.currentTimeMillis());
-        userData.put("dateOfBirth", System.currentTimeMillis());
-
-        // Ajouter la photo de profil si disponible
-        if (user.getPhotoUrl() != null) {
-            userData.put("photoUrl", user.getPhotoUrl().toString());
-        }
-
-        db.collection("users").document(user.getUid())
-                .set(userData)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "✅ Utilisateur créé avec succès dans Firestore");
-                    Toast.makeText(LoginActivity.this, "Compte créé avec succès!", Toast.LENGTH_SHORT).show();
-
-                    // Rediriger selon le rôle
-                    checkUserRoleAndRedirect(user.getUid());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "❌ Erreur création utilisateur Firestore: " + e.getMessage());
-                    Toast.makeText(LoginActivity.this, "Erreur création du profil: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-    }
-
-    private void updateUserInFirestore(FirebaseUser user, DocumentSnapshot existingDocument) {
-        Map<String, Object> updates = new HashMap<>();
-
-        // Mettre à jour les champs qui pourraient avoir changé
-        if (user.getDisplayName() != null && !user.getDisplayName().equals(existingDocument.getString("name"))) {
-            updates.put("name", user.getDisplayName());
-        }
-        if (user.getEmail() != null && !user.getEmail().equals(existingDocument.getString("email"))) {
-            updates.put("email", user.getEmail());
-        }
-        if (user.getPhotoUrl() != null) {
-            updates.put("photoUrl", user.getPhotoUrl().toString());
-        }
-
-        // Mettre à jour la date de dernière connexion
-        updates.put("lastLogin", System.currentTimeMillis());
-
-        if (!updates.isEmpty()) {
-            db.collection("users").document(user.getUid())
-                    .update(updates)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "✅ Utilisateur mis à jour dans Firestore");
-                        checkUserRoleAndRedirect(user.getUid());
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "❌ Erreur mise à jour Firestore: " + e.getMessage());
-                        // Continuer quand même avec la redirection
-                        checkUserRoleAndRedirect(user.getUid());
-                    });
-        } else {
-            // Aucune mise à jour nécessaire, rediriger directement
-            checkUserRoleAndRedirect(user.getUid());
-        }
-    }
-
-    private void checkUserRoleAndRedirect(String userId) {
-        Log.d(TAG, "Vérification du rôle pour l'utilisateur: " + userId);
-
+    // NOUVELLE MÉTHODE: Vérifier dans la collection "users"
+    private void checkInUsersCollection(String userId) {
         db.collection("users").document(userId)
                 .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            String role = document.getString("role");
-                            Log.d(TAG, "Rôle trouvé: " + role);
+                .addOnCompleteListener(usersTask -> {
+                    if (usersTask.isSuccessful()) {
+                        DocumentSnapshot userDoc = usersTask.getResult();
+                        if (userDoc.exists()) {
+                            // Utilisateur trouvé dans users (ancien système)
+                            String role = userDoc.getString("role");
+                            Log.d(TAG, "Utilisateur trouvé dans users (ancien système) - Rôle: " + role);
 
                             if (role != null) {
-                                redirectBasedOnRole(role);
+                                redirectBasedOnRole(role, "user");
                             } else {
-                                // Si pas de rôle défini, utiliser le rôle par défaut
-                                Log.d(TAG, "Aucun rôle défini, utilisation du rôle par défaut 'employee'");
-                                redirectBasedOnRole("employee");
+                                // Rôle par défaut pour les anciens utilisateurs
+                                Log.d(TAG, "Aucun rôle défini dans users, utilisation du rôle par défaut 'employee'");
+                                redirectBasedOnRole("employee", "user");
                             }
                         } else {
-                            Log.e(TAG, "Document utilisateur non trouvé dans Firestore");
-                            Toast.makeText(this, "Erreur: profil utilisateur non trouvé", Toast.LENGTH_SHORT).show();
+                            // Utilisateur non trouvé dans aucune collection
+                            Log.e(TAG, "Utilisateur non trouvé dans Employees ni users");
+                            Toast.makeText(this, "Erreur: profil utilisateur non trouvé. Contactez l'administrateur.", Toast.LENGTH_LONG).show();
                             mAuth.signOut();
                         }
                     } else {
-                        Log.e(TAG, "Erreur vérification rôle: " + task.getException().getMessage());
-                        Toast.makeText(this, "Erreur de vérification du rôle", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Erreur vérification users: " + usersTask.getException().getMessage());
+                        Toast.makeText(this, "Erreur de vérification du profil", Toast.LENGTH_SHORT).show();
                         mAuth.signOut();
                     }
                 });
     }
 
-    private void redirectBasedOnRole(String role) {
+    // MODIFICATION: Ajouter le paramètre sourceCollection
+    private void redirectBasedOnRole(String role, String sourceCollection) {
         Intent intent;
+        String welcomeMessage = "";
 
-        if ("gerant".equals(role) || "admin".equals(role)) {
-            // Rediriger vers MainActivity (Dashboard gérant)
+        // Déterminer l'activité de destination basée sur le rôle
+        if ("gerant".equals(role) || "admin".equals(role) || "coordinator".equals(role)) {
+            // Rediriger vers MainActivity (Dashboard gérant/admin/coordinateur)
             intent = new Intent(LoginActivity.this, MainActivity.class);
-            Toast.makeText(this, "Bienvenue Gérant!", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Redirection vers MainActivity (Gérant)");
-        } else {
+            welcomeMessage = "Bienvenue Gérant/Admin!";
+            Log.d(TAG, "Redirection vers MainActivity (Rôle: " + role + ")");
+        } else if ("deliver".equals(role)) {
             // Rediriger vers EmployeeDeliveryActivity (Dashboard livreur)
             intent = new Intent(LoginActivity.this, EmployeeDeliveryActivity.class);
-            Toast.makeText(this, "Bienvenue Livreur!", Toast.LENGTH_SHORT).show();
+            welcomeMessage = "Bienvenue Livreur!";
             Log.d(TAG, "Redirection vers EmployeeDeliveryActivity (Livreur)");
+        } else {
+            // Pour collaborator et autres rôles, rediriger vers EmployeeActivity
+            intent = new Intent(LoginActivity.this, EmployeeActivity.class);
+            welcomeMessage = "Bienvenue Collaborateur!";
+            Log.d(TAG, "Redirection vers EmployeeActivity (Rôle: " + role + ")");
         }
+
+        // Afficher un message de bienvenue personnalisé
+        if (!welcomeMessage.isEmpty()) {
+            Toast.makeText(this, welcomeMessage, Toast.LENGTH_SHORT).show();
+        }
+
+        // Ajouter la source dans les extras si nécessaire
+        intent.putExtra("source_collection", sourceCollection);
 
         startActivity(intent);
         finish();
-    }
-
-    private void createAccount() {
-        // Rediriger vers l'activité d'inscription
-        Intent intent = new Intent(this, RegisterActivity.class);
-        startActivity(intent);
     }
 
     private void forgotPassword() {

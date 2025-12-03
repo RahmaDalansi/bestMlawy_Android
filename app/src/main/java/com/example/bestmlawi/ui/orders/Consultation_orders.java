@@ -332,7 +332,7 @@ public class Consultation_orders extends Fragment {
                                 if (menuItem != null) {
                                     txtItemName.setText(menuItem.getName());
                                     txtItemDescription.setText(menuItem.getDescription());
-                                    txtItemPrice.setText(String.format(Locale.FRANCE, "%.2f €", menuItem.getPrice()));
+                                    txtItemPrice.setText(String.format(Locale.FRANCE, "%.2f DT", menuItem.getPrice()));
                                 } else {
                                     txtItemName.setText("Chargement...");
                                 }

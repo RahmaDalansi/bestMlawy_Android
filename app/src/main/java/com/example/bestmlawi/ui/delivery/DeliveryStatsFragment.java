@@ -204,9 +204,9 @@ public class DeliveryStatsFragment extends Fragment {
 
         // Revenus
         if (monthlyEarnings != null) {
-            tvMonthlyEarnings.setText(String.format("%.2f €", monthlyEarnings));
+            tvMonthlyEarnings.setText(String.format("%.2f DT", monthlyEarnings));
         } else {
-            tvMonthlyEarnings.setText("0.00 €");
+            tvMonthlyEarnings.setText("0.00 DT");
         }
 
         // Meilleur jour
@@ -235,7 +235,7 @@ public class DeliveryStatsFragment extends Fragment {
         // Statistiques détaillées
         tvOnTimeDeliveries.setText("0");
         tvLateDeliveries.setText("0");
-        tvMonthlyEarnings.setText("0.00 €");
+        tvMonthlyEarnings.setText("0.00 DT");
         tvBestDay.setText("--");
     }
 

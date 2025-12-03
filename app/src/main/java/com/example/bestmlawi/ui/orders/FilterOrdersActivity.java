@@ -103,7 +103,7 @@ public class FilterOrdersActivity extends AppCompatActivity {
     private void updatePriceDisplay() {
         int min = seekPriceMin.getProgress();
         int max = seekPriceMax.getProgress();
-        txtPriceRange.setText("€" + min + " - €" + max);
+        txtPriceRange.setText("DT" + min + " - DT" + max);
     }
 
     private class PriceChangeListener implements SeekBar.OnSeekBarChangeListener {

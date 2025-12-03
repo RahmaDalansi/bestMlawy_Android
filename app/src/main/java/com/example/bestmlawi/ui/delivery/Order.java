@@ -85,7 +85,7 @@ public class Order {
 
     // Méthodes utilitaires
     public String getFormattedTotal() {
-        return String.format("%.2f €", totalAmount);
+        return String.format("%.2f DT", totalAmount);
     }
 
     public String getFormattedOrderDate() {

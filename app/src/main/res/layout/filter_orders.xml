@@ -225,7 +225,7 @@
                     android:id="@+id/txtPriceRange"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="€100 - €800"
+                    android:text="DT100 - DT800"
                     android:textSize="15sp"
                     android:textColor="#D32F2F"
                     android:textStyle="bold"

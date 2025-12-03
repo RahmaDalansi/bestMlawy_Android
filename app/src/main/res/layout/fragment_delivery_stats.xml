@@ -409,7 +409,7 @@
                             android:id="@+id/tv_monthly_earnings"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0.00 €"
+                            android:text="0.00 DT"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#4CAF50" />

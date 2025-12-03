@@ -91,7 +91,7 @@ public class DeliveryOrderAdapter extends RecyclerView.Adapter<DeliveryOrderAdap
                 tvOrderDate.setText("Date non disponible");
             }
 
-            tvTotalAmount.setText(order.getFormattedTotal() != null ? order.getFormattedTotal() : "0.00 €");
+            tvTotalAmount.setText(order.getFormattedTotal() != null ? order.getFormattedTotal() : "0.00 DT");
 
             // Configurer le statut - VERSION CORRIGÉE
             String status = order.getStatus();

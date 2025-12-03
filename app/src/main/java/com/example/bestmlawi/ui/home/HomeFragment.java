@@ -169,7 +169,7 @@ public class HomeFragment extends Fragment {
                     if (amount != null) totalAmount += amount;
                 }
                 double avgOrderValue = totalOrders > 0 ? totalAmount / totalOrders : 0;
-                tvAvgOrderValue.setText(String.format("%.2f €", avgOrderValue));
+                tvAvgOrderValue.setText(String.format("%.2f DT", avgOrderValue));
 
                 // Préparer les graphiques
                 prepareOrderChartData(task.getResult().getDocuments());
@@ -207,7 +207,7 @@ public class HomeFragment extends Fragment {
                             }
                             if (amount != null) totalRevenue += amount;
                         }
-                        tvTotalRevenue.setText(String.format("%.2f €", totalRevenue));
+                        tvTotalRevenue.setText(String.format("%.2f DT", totalRevenue));
 
                         double monthlyGrowth = 8.5;
                         tvMonthlyGrowth.setText(String.format("+%.1f%%", monthlyGrowth));
@@ -426,7 +426,7 @@ public class HomeFragment extends Fragment {
             entries.add(new Entry(i, revenue));
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Revenus (€)");
+        LineDataSet dataSet = new LineDataSet(entries, "Revenus (DT)");
         dataSet.setColor(getResources().getColor(R.color.chart_line));
         dataSet.setCircleColor(getResources().getColor(R.color.chart_line));
         dataSet.setLineWidth(2.5f);

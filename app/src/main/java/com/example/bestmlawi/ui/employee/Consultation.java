@@ -33,6 +33,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.bestmlawi.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -45,8 +46,9 @@ import java.util.Map;
 
 public class Consultation extends Fragment {
     private ListView lstEmployee;
-    private Button btnAddEmployee, btnApplyClearFilter;
-    private Button btnFilterCollaborator, btnFilterDeliver, btnFilterCoordinator;
+    private Button btnAddEmployee;
+    private MaterialButton btnApplyClearFilter; // Changé en MaterialButton
+    private MaterialButton btnFilterCollaborator, btnFilterDeliver, btnFilterCoordinator; // Changé en MaterialButton
     private EditText edtSearch;
     private TextView txtOurEmployee;
 
@@ -78,17 +80,12 @@ public class Consultation extends Fragment {
         btnApplyClearFilter = root.findViewById(R.id.btnApplyClearFilter);
         edtSearch = root.findViewById(R.id.edtSearch);
 
-        // Initialiser les boutons de filtre
+        // Initialiser les boutons de filtre (MaterialButton)
         btnFilterCollaborator = root.findViewById(R.id.btnFilterCollaborator);
         btnFilterDeliver = root.findViewById(R.id.btnFilterDeliver);
         btnFilterCoordinator = root.findViewById(R.id.btnFilterCoordinator);
 
         txtOurEmployee = root.findViewById(R.id.txtOurEmployee);
-
-        // Supprimer les références à la navigation (car géré par MainActivity)
-        // drawerLayout = root.findViewById(R.id.drawer_layout);
-        // navigationView = root.findViewById(R.id.nav_view);
-        // toolbar = root.findViewById(R.id.toolbar);
 
         employeeList = new ArrayList<>();
         filteredEmployeeList = new ArrayList<>();
@@ -105,7 +102,7 @@ public class Consultation extends Fragment {
                     ImageView imgEmployee = view.findViewById(R.id.imgEmployee);
                     TextView txtEmployeeName = view.findViewById(R.id.txtEmployeeName);
                     TextView txtEmployeeRole = view.findViewById(R.id.txtEmployeeRole);
-                    TextView txtEmployeeLocation = view.findViewById(R.id.txtEmployeeLocation);
+                    TextView txtEmployeeAddress = view.findViewById(R.id.txtEmployeeAddress);
 
                     // Charger l'image depuis Base64
                     String imageBase64 = employee.getImageUrl();
@@ -137,11 +134,11 @@ public class Consultation extends Fragment {
                     txtEmployeeName.setText(employee.getName());
                     txtEmployeeRole.setText(employee.getRole());
 
-                    if (employee.getLocation() != null && !employee.getLocation().isEmpty()) {
-                        txtEmployeeLocation.setText(employee.getLocation());
-                        txtEmployeeLocation.setVisibility(View.VISIBLE);
+                    if (employee.getAddress() != null && !employee.getAddress().isEmpty()) {
+                        txtEmployeeAddress.setText(employee.getAddress());
+                        txtEmployeeAddress.setVisibility(View.VISIBLE);
                     } else {
-                        txtEmployeeLocation.setVisibility(View.GONE);
+                        txtEmployeeAddress.setVisibility(View.GONE);
                     }
                 }
 
@@ -157,33 +154,27 @@ public class Consultation extends Fragment {
     }
 
     private void loadSalesPoints() {
-        db.collection("SalesPoints") // ✅ Nom exact de la collection (avec majuscule)
+        db.collection("SalesPoints")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            // Liste pour stocker les noms des points de vente
                             List<String> salesPointNames = new ArrayList<>();
 
                             for (QueryDocumentSnapshot doc : task.getResult()) {
-                                String name = doc.getString("name"); // ✅ Champ "name", pas "Sale_Point"
+                                String name = doc.getString("name");
                                 String id = doc.getId();
 
                                 if (name != null && !name.isEmpty()) {
                                     salesPointNames.add(name);
-                                    // Vous pouvez stocker le mapping nom → ID si nécessaire
-                                    // nameToSalesPointId.put(name, id);
                                 }
                             }
 
-                            // Mettre à jour l'interface utilisateur si nécessaire
-                            // Par exemple, pour afficher dans un spinner ou une liste
                             Toast.makeText(getContext(),
                                     "Points de vente chargés : " + salesPointNames.size(),
                                     Toast.LENGTH_SHORT).show();
 
-                            // Log pour debug
                             if (salesPointNames.isEmpty()) {
                                 Log.d("Consultation", "Aucun point de vente trouvé");
                             } else {
@@ -264,7 +255,7 @@ public class Consultation extends Fragment {
         });
     }
 
-    private void toggleRoleFilter(String role, Button button) {
+    private void toggleRoleFilter(String role, MaterialButton button) {
         if (selectedRole.equals(role)) {
             selectedRole = "";
             resetFilterButtons();
@@ -277,19 +268,25 @@ public class Consultation extends Fragment {
     }
 
     private void resetFilterButtons() {
-        btnFilterCollaborator.setBackgroundResource(R.drawable.filter_button_default);
-        btnFilterCollaborator.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey_text));
+        // Réinitialiser tous les boutons de filtre
+        btnFilterCollaborator.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), android.R.color.transparent));
+        btnFilterCollaborator.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_600));
+        btnFilterCollaborator.setStrokeColorResource(R.color.gray_400);
 
-        btnFilterDeliver.setBackgroundResource(R.drawable.filter_button_default);
-        btnFilterDeliver.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey_text));
+        btnFilterDeliver.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), android.R.color.transparent));
+        btnFilterDeliver.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_600));
+        btnFilterDeliver.setStrokeColorResource(R.color.gray_400);
 
-        btnFilterCoordinator.setBackgroundResource(R.drawable.filter_button_default);
-        btnFilterCoordinator.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey_text));
+        btnFilterCoordinator.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), android.R.color.transparent));
+        btnFilterCoordinator.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_600));
+        btnFilterCoordinator.setStrokeColorResource(R.color.gray_400);
     }
 
-    private void setButtonSelected(Button button) {
-        button.setBackgroundResource(R.drawable.filter_button_selected);
+    private void setButtonSelected(MaterialButton button) {
+        // Appliquer le style sélectionné
+        button.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.purple_700));
         button.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white));
+        button.setStrokeColorResource(android.R.color.transparent);
     }
 
     private void checkFiltersApplied() {
@@ -311,8 +308,10 @@ public class Consultation extends Fragment {
     private void updateApplyClearButton() {
         if (filtersApplied) {
             btnApplyClearFilter.setText("Clear Filters");
+            btnApplyClearFilter.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.gray_600));
         } else {
             btnApplyClearFilter.setText("Apply Filter");
+            btnApplyClearFilter.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.purple_700));
         }
     }
 
@@ -344,7 +343,7 @@ public class Consultation extends Fragment {
             boolean matchesSearch = searchText.isEmpty() ||
                     employee.getName().toLowerCase().contains(searchText) ||
                     (employee.getEmail() != null && employee.getEmail().toLowerCase().contains(searchText)) ||
-                    (employee.getLocation() != null && employee.getLocation().toLowerCase().contains(searchText));
+                    (employee.getAddress() != null && employee.getAddress().toLowerCase().contains(searchText));
 
             boolean matchesRole = selectedRole.isEmpty() ||
                     (employee.getRole() != null && employee.getRole().equalsIgnoreCase(selectedRole));
@@ -374,7 +373,7 @@ public class Consultation extends Fragment {
         ImageView imgDialogEmployee = dialogView.findViewById(R.id.imgDialogEmployee);
         TextView txtEmployeeName = dialogView.findViewById(R.id.txtDialogEmployeeName);
         TextView txtEmployeeRole = dialogView.findViewById(R.id.txtDialogEmployeeRole);
-        TextView txtEmployeeLocation = dialogView.findViewById(R.id.txtDialogEmployeeLocation);
+        TextView txtEmployeeAddress = dialogView.findViewById(R.id.txtDialogEmployeeAddress);
 
         LinearLayout btnViewDetails = dialogView.findViewById(R.id.btnViewDetails);
         LinearLayout btnEdit = dialogView.findViewById(R.id.btnEdit);
@@ -403,10 +402,10 @@ public class Consultation extends Fragment {
         txtEmployeeName.setText(employee.getName());
         txtEmployeeRole.setText(employee.getRole());
 
-        if (employee.getLocation() != null && !employee.getLocation().isEmpty()) {
-            txtEmployeeLocation.setText(employee.getLocation());
+        if (employee.getAddress() != null && !employee.getAddress().isEmpty()) {
+            txtEmployeeAddress.setText(employee.getAddress());
         } else {
-            txtEmployeeLocation.setText("Not specified");
+            txtEmployeeAddress.setText("Not specified");
         }
 
         AlertDialog dialog = builder.create();
@@ -424,7 +423,17 @@ public class Consultation extends Fragment {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                editEmployee(employee);
+                // Correction: Ajouter EMPLOYEE_ADDRESS pour Modification
+                Intent intent = new Intent(getActivity(), Modification.class);
+                intent.putExtra("EMPLOYEE_ID", employee.getId());
+                intent.putExtra("EMPLOYEE_NAME", employee.getName());
+                intent.putExtra("EMPLOYEE_ROLE", employee.getRole());
+                intent.putExtra("EMPLOYEE_Address", employee.getAddress());
+                intent.putExtra("EMPLOYEE_EMAIL", employee.getEmail());
+                intent.putExtra("EMPLOYEE_PHONE", employee.getPhoneNumber());
+                intent.putExtra("EMPLOYEE_ADDRESS", employee.getAddress()); // Ajout important
+                intent.putExtra("EMPLOYEE_IMAGE_URL", employee.getImageUrl());
+                startActivity(intent);
             }
         });
 
@@ -480,9 +489,10 @@ public class Consultation extends Fragment {
 
         String details = "Name: " + employee.getName() + "\n" +
                 "Role: " + employee.getRole() + "\n" +
-                "Location: " + (employee.getLocation() != null ? employee.getLocation() : "Not specified") + "\n" +
+                "Address: " + (employee.getAddress() != null ? employee.getAddress() : "Not specified") + "\n" +
                 "Email: " + (employee.getEmail() != null ? employee.getEmail() : "Not specified") + "\n" +
-                "Phone: " + (employee.getPhoneNumber() != null ? employee.getPhoneNumber() : "Not specified");
+                "Phone: " + (employee.getPhoneNumber() != null ? employee.getPhoneNumber() : "Not specified") + "\n" +
+                "Address: " + (employee.getAddress() != null ? employee.getAddress() : "Not specified");
 
         builder.setMessage(details);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -493,19 +503,6 @@ public class Consultation extends Fragment {
         });
 
         builder.show();
-    }
-
-    private void editEmployee(Employee employee) {
-        Intent intent = new Intent(getActivity(), Modification.class);
-        intent.putExtra("EMPLOYEE_ID", employee.getId());
-        intent.putExtra("EMPLOYEE_NAME", employee.getName());
-        intent.putExtra("EMPLOYEE_ROLE", employee.getRole());
-        intent.putExtra("EMPLOYEE_LOCATION", employee.getLocation());
-        intent.putExtra("EMPLOYEE_EMAIL", employee.getEmail());
-        intent.putExtra("EMPLOYEE_PHONE", employee.getPhoneNumber());
-        intent.putExtra("EMPLOYEE_POINT_OF_SALE", employee.getPointOfSaleId());
-        intent.putExtra("EMPLOYEE_IMAGE_URL", employee.getImageUrl());
-        startActivity(intent);
     }
 
     private void deleteEmployee(Employee employee) {
@@ -541,7 +538,8 @@ public class Consultation extends Fragment {
                                 employee.setEmail(document.getString("email"));
                                 employee.setPhoneNumber(document.getString("phoneNumber"));
                                 employee.setRole(document.getString("role"));
-                                employee.setLocation(document.getString("location"));
+                                employee.setAddress(document.getString("Address"));
+                                employee.setAddress(document.getString("address")); // Charger l'adresse
                                 employee.setPointOfSaleId(document.getString("point_of_sale_id"));
                                 employee.setImageUrl(document.getString("image"));
                                 employee.setHiredDate(document.getDate("hiredDate"));

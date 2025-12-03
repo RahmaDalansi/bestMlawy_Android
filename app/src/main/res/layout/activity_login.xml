@@ -45,38 +45,47 @@
             android:layout_marginBottom="40dp" />
 
         <!-- Email Input -->
-        <EditText
-            android:id="@+id/editTextEmail"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter your email"
-            android:inputType="textEmailAddress"
-            android:background="@drawable/edittext_background_flat"
-            android:padding="14dp"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/black"
-            android:textColorHint="#9E9E9E"
-            android:drawableStart="@drawable/ic_email_outline"
-            android:drawablePadding="10dp"
-            android:textSize="16sp"
-            android:elevation="1dp" />
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:startIconDrawable="@drawable/ic_email_outline"
+            app:startIconTint="@color/gray_600">
 
-        <!-- Password Input -->
-        <EditText
-            android:id="@+id/editTextPassword"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter your email"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/black"
+                android:textColorHint="#9E9E9E"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password Input avec icône œil -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter your password"
-            android:inputType="textPassword"
-            android:background="@drawable/edittext_background_flat"
-            android:padding="14dp"
             android:layout_marginBottom="24dp"
-            android:textColor="@color/black"
-            android:textColorHint="#9E9E9E"
-            android:drawableStart="@drawable/ic_lock_outline"
-            android:drawablePadding="10dp"
-            android:textSize="16sp"
-            android:elevation="1dp" />
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:startIconDrawable="@drawable/ic_lock_outline"
+            app:startIconTint="@color/gray_600"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/gray_600">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter your password"
+                android:inputType="textPassword"
+                android:textColor="@color/black"
+                android:textColorHint="#9E9E9E"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -174,7 +183,6 @@
             android:textSize="14sp"
             android:textColor="@color/black"
             android:background="@drawable/social_button_outline"
-
             android:drawableStart="@drawable/ic_google_colored"
             android:drawablePadding="8dp"
             android:paddingVertical="14dp"
@@ -200,33 +208,6 @@
             android:paddingStart="70dp"
             android:paddingEnd="50dp"
             android:gravity="center"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Not a member,"
-                android:textSize="14sp"
-                android:textColor="@color/black" />
-
-            <TextView
-                android:id="@+id/textCreateAccount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" Create an account now"
-                android:textSize="14sp"
-                android:textColor="#C0392B"
-                android:textStyle="bold"
-                android:clickable="true"
-                android:focusable="true" />
-
-
-        </LinearLayout>
 
     </LinearLayout>
 

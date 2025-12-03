@@ -44,11 +44,11 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/txtEmployeeLocation"
+            android:id="@+id/txtEmployeeAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Location"
+            android:text="address"
             android:textColor="#999999"
             android:textSize="15sp" />
 

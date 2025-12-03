@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:text="View Detail"
+            android:text="Detail"
             android:textColor="#D32F2F"
             android:backgroundTint="#FFFFFF"
             android:strokeColor="#D32F2F"
