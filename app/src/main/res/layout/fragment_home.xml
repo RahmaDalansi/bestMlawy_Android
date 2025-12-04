@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SOLUTION: SwipeRefreshLayout DOIT être le parent, pas l'enfant -->
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,12 +6,12 @@
     android:id="@+id/swipe_refresh_dashboard"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F7FA"
     tools:context=".ui.home.HomeFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#F5F7FA"
         android:fillViewport="true">
 
         <LinearLayout
@@ -102,53 +101,6 @@
                                 android:textColor="#888888" />
 
                         </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Revenus Totaux -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@android:color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Revenus Totaux"
-                                android:textSize="12sp"
-                                android:textColor="#666666" />
-
-                            <TextView
-                                android:id="@+id/tv_total_revenue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="0.00 DT"
-                                android:textSize="22sp"
-                                android:textStyle="bold"
-                                android:textColor="#2196F3" />
-
-                            <TextView
-                                android:id="@+id/tv_monthly_growth"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="+0%"
-                                android:textSize="10sp"
-                                android:textColor="#2196F3" />
-
-                        </LinearLayout>
-
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
@@ -191,7 +143,7 @@
                                 android:text="0"
                                 android:textSize="22sp"
                                 android:textStyle="bold"
-                                android:textColor="#FF9800" />
+                                android:textColor="#999393" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -252,6 +204,8 @@
 
                 </LinearLayout>
 
+
+
                 <!-- Troisième ligne -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -259,42 +213,8 @@
                     android:orientation="horizontal"
                     android:layout_marginBottom="12dp">
 
-                    <!-- Moyenne Commande -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@android:color/white">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Moy. Commande"
-                                android:textSize="12sp"
-                                android:textColor="#666666" />
-
-                            <TextView
-                                android:id="@+id/tv_avg_order_value"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="0.00 DT"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="#4CAF50" />
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Commandes En Attente -->
                     <com.google.android.material.card.MaterialCardView
@@ -375,6 +295,40 @@
 
             </LinearLayout>
 
+            <!-- Graphique Statuts -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Statut des Commandes"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pie_chart_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
             <!-- Section Graphiques -->
             <TextView
                 android:layout_width="match_parent"
@@ -451,38 +405,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Graphique Statuts -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@android:color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Statut des Commandes"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#333333"
-                        android:layout_marginBottom="12dp" />
-
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pie_chart_status"
-                        android:layout_width="match_parent"
-                        android:layout_height="300dp" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- Section Actions Rapides -->
             <TextView

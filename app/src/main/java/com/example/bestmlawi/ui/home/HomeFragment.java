@@ -46,9 +46,9 @@ public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
 
-    // KPI Cards
-    private TextView tvTotalOrders, tvTotalRevenue, tvActiveUsers, tvCompletedDeliveries;
-    private TextView tvMonthlyGrowth, tvAvgOrderValue, tvPendingOrders, tvTodayOrders;
+    // KPI Cards - CORRIGÉ : Seulement les TextView qui existent dans le layout
+    private TextView tvTotalOrders, tvActiveUsers, tvCompletedDeliveries;
+    private TextView tvPendingOrders, tvTodayOrders;
 
     // Charts
     private BarChart barChartOrders;
@@ -91,13 +91,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void initializeViews(View view) {
-        // KPI Cards
+        // KPI Cards - CORRIGÉ : Seulement les TextView qui existent dans le layout
         tvTotalOrders = view.findViewById(R.id.tv_total_orders);
-        tvTotalRevenue = view.findViewById(R.id.tv_total_revenue);
         tvActiveUsers = view.findViewById(R.id.tv_active_users);
         tvCompletedDeliveries = view.findViewById(R.id.tv_completed_deliveries);
-        tvMonthlyGrowth = view.findViewById(R.id.tv_monthly_growth);
-        tvAvgOrderValue = view.findViewById(R.id.tv_avg_order_value);
         tvPendingOrders = view.findViewById(R.id.tv_pending_orders);
         tvTodayOrders = view.findViewById(R.id.tv_today_orders);
 
@@ -124,7 +121,7 @@ public class HomeFragment extends Fragment {
         // Charger toutes les données en parallèle
         loadOrdersData();
         loadUsersData();
-        loadRevenueData();
+        // loadRevenueData(); // REMOVED: Pas de TextView pour afficher le revenu
         loadTodayOrders();
     }
 
@@ -136,50 +133,41 @@ public class HomeFragment extends Fragment {
 
                 // Commandes complétées
                 long completed = task.getResult().getDocuments().stream()
-                        .filter(doc -> "Livré".equals(doc.getString("status")) ||
-                                "delivered".equals(doc.getString("status")))
+                        .filter(doc -> {
+                            String status = doc.getString("status");
+                            return status != null &&
+                                    (status.equals("Livré") ||
+                                            status.equalsIgnoreCase("delivered") ||
+                                            status.equalsIgnoreCase("completed"));
+                        })
                         .count();
                 tvCompletedDeliveries.setText(String.valueOf(completed));
 
                 // Commandes en attente
                 long pending = task.getResult().getDocuments().stream()
-                        .filter(doc -> "Prêt".equals(doc.getString("status")) ||
-                                "pending".equals(doc.getString("status")) ||
-                                "assigned".equals(doc.getString("status")))
+                        .filter(doc -> {
+                            String status = doc.getString("status");
+                            return status != null &&
+                                    (status.equals("En attente") ||
+                                            status.equalsIgnoreCase("pending") ||
+                                            status.equalsIgnoreCase("waiting"));
+                        })
                         .count();
                 tvPendingOrders.setText(String.valueOf(pending));
-
-                // Valeur moyenne des commandes
-                double totalAmount = 0;
-                for (QueryDocumentSnapshot doc : task.getResult()) {
-                    Double amount = doc.getDouble("totalAmount");
-                    if (amount == null) {
-                        amount = doc.getDouble("amount");
-                    }
-                    if (amount == null) {
-                        String amountStr = doc.getString("totalAmount");
-                        if (amountStr != null) {
-                            try {
-                                amount = Double.parseDouble(amountStr);
-                            } catch (NumberFormatException e) {
-                                amount = 0.0;
-                            }
-                        }
-                    }
-                    if (amount != null) totalAmount += amount;
-                }
-                double avgOrderValue = totalOrders > 0 ? totalAmount / totalOrders : 0;
-                tvAvgOrderValue.setText(String.format("%.2f DT", avgOrderValue));
 
                 // Préparer les graphiques
                 prepareOrderChartData(task.getResult().getDocuments());
                 prepareStatusChartData(task.getResult().getDocuments());
 
+                // Arrêter le refresh spinner
                 swipeRefreshLayout.setRefreshing(false);
             } else {
                 if (swipeRefreshLayout != null) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                tvTotalOrders.setText("0");
+                tvCompletedDeliveries.setText("0");
+                tvPendingOrders.setText("0");
             }
         });
     }
@@ -189,32 +177,10 @@ public class HomeFragment extends Fragment {
             if (task.isSuccessful() && getActivity() != null) {
                 int totalUsers = task.getResult().size();
                 tvActiveUsers.setText(String.valueOf(totalUsers));
+            } else {
+                tvActiveUsers.setText("0");
             }
         });
-    }
-
-    private void loadRevenueData() {
-        db.collection("orders")
-                .whereIn("status", java.util.Arrays.asList("Livré", "delivered", "En cours"))
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && getActivity() != null) {
-                        double totalRevenue = 0;
-                        for (QueryDocumentSnapshot doc : task.getResult()) {
-                            Double amount = doc.getDouble("totalAmount");
-                            if (amount == null) {
-                                amount = doc.getDouble("amount");
-                            }
-                            if (amount != null) totalRevenue += amount;
-                        }
-                        tvTotalRevenue.setText(String.format("%.2f DT", totalRevenue));
-
-                        double monthlyGrowth = 8.5;
-                        tvMonthlyGrowth.setText(String.format("+%.1f%%", monthlyGrowth));
-
-                        prepareRevenueChartData();
-                    }
-                });
     }
 
     private void loadTodayOrders() {
@@ -239,6 +205,10 @@ public class HomeFragment extends Fragment {
                                 })
                                 .count();
                         tvTodayOrders.setText(String.valueOf(todayCount));
+                        prepareRevenueChartData(); // Appeler ici après avoir les données
+                    } else {
+                        tvTodayOrders.setText("0");
+                        prepareRevenueChartData(); // Toujours préparer le graphique
                     }
                 });
     }
@@ -265,14 +235,11 @@ public class HomeFragment extends Fragment {
             barChartOrders.setHighlightPerDragEnabled(false);
 
             // SetOnTouchListener CRITIQUE pour permettre le scroll
-            barChartOrders.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, android.view.MotionEvent event) {
-                    // Toujours retourner false pour permettre au parent de gérer le touch
-                    // Et permettre au NestedScrollView de scroller
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    return false;
-                }
+            barChartOrders.setOnTouchListener((v, event) -> {
+                // Toujours retourner false pour permettre au parent de gérer le touch
+                // Et permettre au NestedScrollView de scroller
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+                return false;
             });
         }
 
@@ -289,12 +256,9 @@ public class HomeFragment extends Fragment {
             lineChartRevenue.setHighlightPerTapEnabled(false);
             lineChartRevenue.setHighlightPerDragEnabled(false);
 
-            lineChartRevenue.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, android.view.MotionEvent event) {
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    return false;
-                }
+            lineChartRevenue.setOnTouchListener((v, event) -> {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+                return false;
             });
         }
 
@@ -306,14 +270,10 @@ public class HomeFragment extends Fragment {
             pieChartStatus.setFocusableInTouchMode(false);
             pieChartStatus.setRotationEnabled(false);
             pieChartStatus.setHighlightPerTapEnabled(false);
-            //pieChartStatus.setHighlightPerDragEnabled(false);
 
-            pieChartStatus.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, android.view.MotionEvent event) {
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    return false;
-                }
+            pieChartStatus.setOnTouchListener((v, event) -> {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+                return false;
             });
         }
     }
@@ -383,23 +343,29 @@ public class HomeFragment extends Fragment {
     private void prepareOrderChartData(List<DocumentSnapshot> documents) {
         if (barChartOrders == null || getActivity() == null) return;
 
+        // Créer des données pour les 7 derniers jours
         List<String> days = new ArrayList<>();
         List<BarEntry> entries = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE", Locale.getDefault());
 
-        for (int i = 6; i >= 0; i--) {
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        // Ajuster pour avoir du lundi au dimanche
+        calendar.add(Calendar.DAY_OF_YEAR, -6); // Commencer 6 jours en arrière
+
+        for (int i = 0; i < 7; i++) {
             String dayName = sdf.format(calendar.getTime());
             days.add(dayName);
 
-            int count = (int) (Math.random() * 30) + 10;
-            entries.add(new BarEntry(6 - i, count));
+            // Simuler des données aléatoires (vous devriez remplacer par des données réelles)
+            int count = (int) (Math.random() * 20) + 5;
+            entries.add(new BarEntry(i, count));
+
+            calendar.add(Calendar.DAY_OF_YEAR, 1); // Jour suivant
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "Commandes");
-        dataSet.setColor(getResources().getColor(R.color.chart_bar));
+        dataSet.setColor(Color.parseColor("#4CAF50")); // Vert
         dataSet.setValueTextColor(Color.DKGRAY);
         dataSet.setValueTextSize(10f);
 
@@ -427,15 +393,15 @@ public class HomeFragment extends Fragment {
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Revenus (DT)");
-        dataSet.setColor(getResources().getColor(R.color.chart_line));
-        dataSet.setCircleColor(getResources().getColor(R.color.chart_line));
+        dataSet.setColor(Color.parseColor("#2196F3")); // Bleu
+        dataSet.setCircleColor(Color.parseColor("#2196F3"));
         dataSet.setLineWidth(2.5f);
         dataSet.setCircleRadius(4f);
         dataSet.setDrawCircleHole(false);
         dataSet.setValueTextColor(Color.DKGRAY);
         dataSet.setValueTextSize(10f);
         dataSet.setDrawFilled(true);
-        dataSet.setFillColor(getResources().getColor(R.color.chart_line_light));
+        dataSet.setFillColor(Color.parseColor("#E3F2FD")); // Bleu clair
         dataSet.setFillAlpha(100);
 
         LineData lineData = new LineData(dataSet);
@@ -456,15 +422,25 @@ public class HomeFragment extends Fragment {
             String status = doc.getString("status");
             if (status == null) status = "Inconnu";
 
-            if (status.equals("Livré") || status.equals("delivered")) {
+            // Normaliser les statuts
+            if (status.equalsIgnoreCase("Livré") ||
+                    status.equalsIgnoreCase("delivered") ||
+                    status.equalsIgnoreCase("completed")) {
                 status = "Livré";
-            } else if (status.equals("Prêt") || status.equals("ready")) {
+            } else if (status.equalsIgnoreCase("Prêt") ||
+                    status.equalsIgnoreCase("ready")) {
                 status = "Prêt";
-            } else if (status.equals("En cours") || status.equals("in_progress")) {
+            } else if (status.equalsIgnoreCase("En cours") ||
+                    status.equalsIgnoreCase("in_progress") ||
+                    status.equalsIgnoreCase("processing")) {
                 status = "En cours";
-            } else if (status.equals("pending") || status.equals("attente")) {
+            } else if (status.equalsIgnoreCase("En attente") ||
+                    status.equalsIgnoreCase("pending") ||
+                    status.equalsIgnoreCase("waiting")) {
                 status = "En attente";
-            } else if (status.equals("cancelled") || status.equals("annulé")) {
+            } else if (status.equalsIgnoreCase("cancelled") ||
+                    status.equalsIgnoreCase("annulé") ||
+                    status.equalsIgnoreCase("canceled")) {
                 status = "Annulé";
             }
 
@@ -482,13 +458,14 @@ public class HomeFragment extends Fragment {
 
         PieDataSet dataSet = new PieDataSet(entries, "Statut des Commandes");
 
+        // Utiliser des couleurs fixes si les couleurs de resources ne sont pas disponibles
         int[] colors = new int[]{
-                getResources().getColor(R.color.status_delivered),
-                getResources().getColor(R.color.status_in_progress),
-                getResources().getColor(R.color.status_assigned),
-                getResources().getColor(R.color.status_pending),
-                getResources().getColor(R.color.status_cancelled),
-                Color.GRAY
+                Color.parseColor("#4CAF50"), // Vert - Livré
+                Color.parseColor("#2196F3"), // Bleu - En cours
+                Color.parseColor("#FF9800"), // Orange - Prêt
+                Color.parseColor("#FF5722"), // Rouge Orange - En attente
+                Color.parseColor("#F44336"), // Rouge - Annulé
+                Color.GRAY                    // Gris - Autres
         };
 
         dataSet.setColors(colors);
@@ -522,9 +499,11 @@ public class HomeFragment extends Fragment {
 
     public void onViewOrdersClick(View view) {
         // Naviguer vers les commandes
+        // Exemple : Navigation.findNavController(view).navigate(R.id.navigation_orders);
     }
 
     public void onViewUsersClick(View view) {
         // Naviguer vers la gestion des utilisateurs
+        // Exemple : Navigation.findNavController(view).navigate(R.id.navigation_users);
     }
 }

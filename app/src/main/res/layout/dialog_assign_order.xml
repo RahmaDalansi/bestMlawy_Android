@@ -1,89 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="#FFFFFF">
 
-    <!-- Titre -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Assigner Commande"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:background="#D32F2F"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Order ID -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Order Id"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/txtOrderId"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CMD-001"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"
-        android:padding="8dp"
-        android:background="#F5F5F5" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Sales Point Spinner -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Point de Vente"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        <!-- Titre -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Assigner Commande"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="#D32F2F"
+            android:padding="12dp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-    <Spinner
-        android:id="@+id/spinnerSalesPoint"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/spinner_bg"
-        android:padding="8dp"
-        android:layout_marginBottom="16dp" />
+        <!-- Order ID -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order Id"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Driver Spinner -->
+        <TextView
+            android:id="@+id/txtOrderId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CMD-001"
+            android:textSize="16sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="16dp"
+            android:padding="12dp"
+            android:background="#F5F5F5"
+            android:drawableStart="@android:drawable/ic_menu_info_details"
+            android:drawablePadding="8dp" />
 
+        <!-- Sales Point Spinner -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Point de Vente"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Delivery Name Spinner -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nom du Livreur"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        <Spinner
+            android:id="@+id/spinnerSalesPoint"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/spinner_bg"
+            android:padding="8dp"
+            android:layout_marginBottom="20dp" />
 
-    <Spinner
-        android:id="@+id/spinnerDelivery"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/spinner_bg"
-        android:padding="8dp"
-        android:layout_marginBottom="16dp" />
+        <!-- Séparateur -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginVertical="8dp" />
 
-    <!-- Bouton Assign -->
-    <Button
-        android:id="@+id/btnAssignOrder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Assign Order"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#D32F2F"
-        android:padding="12dp"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        <!-- Carte Google Maps -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 Sélectionner un Livreur Actif"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cliquez sur un marqueur rouge pour sélectionner un livreur"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:layout_marginBottom="12dp" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0">
+
+            <fragment
+                android:id="@+id/mapFragment"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </FrameLayout>
+
+        <!-- Livreur sélectionné -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Livreur Sélectionné"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#F5F5F5"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_menu_mylocation"
+                android:tint="#D32F2F"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/txtSelectedDeliverer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Aucun livreur sélectionné"
+                android:textSize="14sp"
+                android:textColor="#999999"
+                android:layout_gravity="center_vertical" />
+
+        </LinearLayout>
+
+        <!-- Bouton Assign -->
+        <Button
+            android:id="@+id/btnAssignOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✓ Assigner la Commande"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#D32F2F"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:enabled="false"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -66,37 +66,94 @@
             android:layout_height="46dp"
             android:hint="Rechercher par ID..."
             android:textSize="16sp"
-            android:background="@drawable/bg_round_edittext"
+            android:background="@null"
             android:paddingStart="14dp"
             android:paddingEnd="14dp" />
-
-        <ImageView
-            android:id="@+id/imgFilter"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:src="@android:drawable/ic_menu_sort_by_size"
-            android:background="@drawable/bg_round_red_large"
-            android:padding="14dp"
-            android:contentDescription="Filter Orders"
-            android:clickable="true"
-            android:focusable="true" />
     </LinearLayout>
 
-    <!-- Lien filtres modernisé -->
+    <!-- BARRE DES FILTRES PAR STATUT -->
+    <LinearLayout
+        android:id="@+id/statusFilterContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:layout_marginBottom="12dp">
+
+        <!-- Bouton Tous -->
+        <Button
+            android:id="@+id/btnFilterAll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="42dp"
+            android:layout_marginHorizontal="4dp"
+            android:text="Tous"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_btn_status_all_selected"
+            android:stateListAnimator="@null"
+            android:elevation="2dp" />
+
+        <!-- Bouton En attente -->
+        <Button
+            android:id="@+id/btnFilterPending"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="42dp"
+            android:layout_marginHorizontal="4dp"
+            android:text="cour"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:background="@drawable/bg_btn_status_pending"
+            android:stateListAnimator="@null"
+            android:elevation="2dp" />
+
+        <!-- Bouton Prêt -->
+        <Button
+            android:id="@+id/btnFilterReady"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="42dp"
+            android:layout_marginHorizontal="4dp"
+            android:text="Prêt"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:background="@drawable/bg_btn_status_ready"
+            android:stateListAnimator="@null"
+            android:elevation="2dp" />
+
+        <!-- Bouton Livré -->
+        <Button
+            android:id="@+id/btnFilterDelivered"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="42dp"
+            android:layout_marginHorizontal="4dp"
+            android:text="Livré"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:background="@drawable/bg_btn_status_delivered"
+            android:stateListAnimator="@null"
+            android:elevation="2dp" />
+    </LinearLayout>
+
+    <!-- Lien filtres avancés -->
     <TextView
         android:id="@+id/txtOpenFilters"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Filter Orders"
+        android:text="Filtres avancés"
         android:textColor="#C62828"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="14sp"
         android:background="@drawable/bg_round_gray_light"
         android:layout_marginEnd="22dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"
         android:layout_gravity="end"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="10dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:elevation="2dp"
         android:clickable="true"
         android:focusable="true" />

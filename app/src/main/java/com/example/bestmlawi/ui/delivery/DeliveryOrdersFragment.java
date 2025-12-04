@@ -1,11 +1,18 @@
 package com.example.bestmlawi.ui.delivery;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,11 +24,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DeliveryOrdersFragment extends Fragment {
 
@@ -32,6 +45,11 @@ public class DeliveryOrdersFragment extends Fragment {
     private FirebaseAuth mAuth;
     private SwipeRefreshLayout swipeRefreshLayout;
     private TextView tvEmptyState, tvErrorState;
+    private ImageView imgScanQr;
+
+    // Scanner QR Code
+    private GmsBarcodeScanner scanner;
+    private boolean isScanning = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_delivery_orders, container, false);
@@ -43,7 +61,9 @@ public class DeliveryOrdersFragment extends Fragment {
         initializeViews(view);
         setupRecyclerView();
         setupSwipeRefresh();
-        loadUserOrders(); // Charger seulement les commandes de l'utilisateur connecté
+        initBarcodeScanner();
+        setupQrScanListener();
+        loadUserOrders();
 
         return view;
     }
@@ -53,6 +73,7 @@ public class DeliveryOrdersFragment extends Fragment {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
         tvErrorState = view.findViewById(R.id.tv_error_state);
+        imgScanQr = view.findViewById(R.id.imgScanQr);
 
         showLoadingState();
     }
@@ -89,6 +110,138 @@ public class DeliveryOrdersFragment extends Fragment {
         });
     }
 
+    // ==================== QR CODE SCANNER ====================
+
+    private void initBarcodeScanner() {
+        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(
+                        Barcode.FORMAT_QR_CODE,
+                        Barcode.FORMAT_AZTEC)
+                .enableAutoZoom()
+                .build();
+
+        scanner = GmsBarcodeScanning.getClient(requireContext(), options);
+    }
+
+    private void setupQrScanListener() {
+        if (imgScanQr != null) {
+            imgScanQr.setOnClickListener(v -> onScanQRCode());
+        }
+    }
+
+    private void scanQrCode() {
+        if (isScanning) {
+            Toast.makeText(getContext(), "Scan déjà en cours...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        isScanning = true;
+
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    isScanning = false;
+
+                    if (barcode == null) {
+                        Toast.makeText(getContext(), "Aucun code détecté", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String rawValue = barcode.getRawValue();
+                    if (rawValue == null || rawValue.trim().isEmpty()) {
+                        Toast.makeText(getContext(), "Code vide ou invalide", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Vérifier que la commande appartient au livreur connecté
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    if (currentUser == null) {
+                        Toast.makeText(getContext(), "Erreur: Utilisateur non connecté", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String userId = currentUser.getUid();
+
+                    // Récupérer la commande pour vérifier si elle appartient au livreur
+                    db.collection("orders").document(rawValue)
+                            .get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    String deliverId = documentSnapshot.getString("deliverId");
+                                    String currentStatus = documentSnapshot.getString("status");
+
+                                    // Vérifier si la commande est assignée à ce livreur
+                                    if (deliverId != null && deliverId.equals(userId)) {
+                                        // Marquer comme livrée
+                                        Map<String, Object> data = new HashMap<>();
+                                        data.put("status", "Livré");
+                                        data.put("deliveryDate", new Date());
+
+                                        db.collection("orders").document(rawValue)
+                                                .update(data)
+                                                .addOnSuccessListener(aVoid -> {
+                                                    Toast.makeText(getContext(),
+                                                            "✅ Commande #" + rawValue + " marquée comme livrée",
+                                                            Toast.LENGTH_LONG).show();
+                                                    loadUserOrders(); // Recharger la liste
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(getContext(),
+                                                            "❌ Erreur mise à jour : " + e.getMessage(),
+                                                            Toast.LENGTH_SHORT).show();
+                                                });
+                                    } else {
+                                        Toast.makeText(getContext(),
+                                                "⚠️ Cette commande n'est pas assignée à vous",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                } else {
+                                    Toast.makeText(getContext(),
+                                            "❌ Commande introuvable",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(getContext(),
+                                        "❌ Erreur de vérification : " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    isScanning = false;
+                    Toast.makeText(getContext(),
+                            "❌ Scan échoué : " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private boolean onScanQRCode() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{Manifest.permission.CAMERA}, 1001);
+        } else {
+            scanQrCode();
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1001) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                scanQrCode();
+            } else {
+                Toast.makeText(getContext(),
+                        "Permission caméra requise pour scanner le QR code",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // ==================== ORDERS MANAGEMENT ====================
+
     private void loadUserOrders() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
@@ -101,7 +254,6 @@ public class DeliveryOrdersFragment extends Fragment {
 
         System.out.println("DEBUG - Recherche des commandes pour deliverId: " + userId);
 
-        // Chercher les commandes où deliverId = userId de l'utilisateur connecté
         db.collection("orders")
                 .whereEqualTo("deliverId", userId)
                 .get()
@@ -116,32 +268,24 @@ public class DeliveryOrdersFragment extends Fragment {
                             try {
                                 count++;
 
-                                // Récupérer les données du document
                                 Order order = new Order();
-
-                                // Définir l'ID du document
                                 order.setOrderId(document.getId());
 
-                                // Récupérer les champs de base
                                 String deliveryName = document.getString("deliveryName");
                                 String address = document.getString("address");
                                 String status = document.getString("status");
                                 String deliverId = document.getString("deliverId");
-                                String salesPointId = document.getString("sales_point_id");
                                 String userIdFromDb = document.getString("user_id");
 
-                                // Définir les valeurs dans l'objet Order
                                 order.setCustomerName(deliveryName != null ? deliveryName : "Nom inconnu");
                                 order.setDeliveryAddress(address != null ? address : "Adresse inconnue");
                                 order.setStatus(status != null ? status : "pending");
                                 order.setDeliverId(deliverId);
 
-                                // Stocker les autres infos si nécessaire
                                 if (userIdFromDb != null) {
                                     order.setCustomerPhone("Client ID: " + userIdFromDb);
                                 }
 
-                                // Récupérer orderDate (timestamp Firestore)
                                 Object orderDateObj = document.get("orderDate");
                                 if (orderDateObj instanceof com.google.firebase.Timestamp) {
                                     com.google.firebase.Timestamp timestamp = (com.google.firebase.Timestamp) orderDateObj;
@@ -152,23 +296,10 @@ public class DeliveryOrdersFragment extends Fragment {
                                     order.setOrderDate(new Date());
                                 }
 
-                                // Debug logging pour chaque commande trouvée
                                 System.out.println("DEBUG - Commande " + count + " trouvée:");
                                 System.out.println("  ID: " + document.getId());
-                                System.out.println("  Nom: " + deliveryName);
-                                System.out.println("  Adresse: " + address);
                                 System.out.println("  Statut: " + status);
-                                System.out.println("  DeliverId: " + deliverId);
-                                System.out.println("  Date: " + order.getOrderDate());
 
-                                // Vérifier si le deliverId correspond bien
-                                if (deliverId != null && deliverId.equals(userId)) {
-                                    System.out.println("  ✓ DeliverId correspond à l'utilisateur connecté");
-                                } else {
-                                    System.out.println("  ✗ DeliverId NE correspond PAS");
-                                }
-
-                                // Ajouter à la liste
                                 orderList.add(order);
 
                             } catch (Exception e) {
@@ -177,7 +308,6 @@ public class DeliveryOrdersFragment extends Fragment {
                             }
                         }
 
-                        // Trier par date (plus récent en premier)
                         Collections.sort(orderList, (o1, o2) -> {
                             if (o1.getOrderDate() != null && o2.getOrderDate() != null) {
                                 return o2.getOrderDate().compareTo(o1.getOrderDate());
@@ -188,7 +318,6 @@ public class DeliveryOrdersFragment extends Fragment {
                         orderAdapter.notifyDataSetChanged();
 
                         System.out.println("DEBUG - Nombre total de commandes trouvées: " + count);
-                        System.out.println("DEBUG - Nombre de commandes dans la liste: " + orderList.size());
 
                         if (orderList.isEmpty()) {
                             showEmptyState("Aucune commande assignée à vous");
@@ -208,7 +337,6 @@ public class DeliveryOrdersFragment extends Fragment {
                 });
     }
 
-    // Méthodes pour gérer les états d'affichage
     private void showLoadingState() {
         ordersRecyclerView.setVisibility(View.GONE);
         tvEmptyState.setVisibility(View.GONE);
@@ -236,7 +364,6 @@ public class DeliveryOrdersFragment extends Fragment {
     }
 
     private void showOrderDetails(Order order) {
-        // TODO: Implémenter l'ouverture des détails de commande
         System.out.println("Détails de la commande: " + order.getOrderId());
     }
 
@@ -250,10 +377,11 @@ public class DeliveryOrdersFragment extends Fragment {
                             "deliveryName", currentUser.getDisplayName()
                     )
                     .addOnSuccessListener(aVoid -> {
-                        loadUserOrders(); // Recharger la liste
+                        Toast.makeText(getContext(), "✅ Commande acceptée", Toast.LENGTH_SHORT).show();
+                        loadUserOrders();
                     })
                     .addOnFailureListener(e -> {
-                        showErrorState("Erreur d'acceptation: " + e.getMessage());
+                        Toast.makeText(getContext(), "❌ Erreur: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }
     }
@@ -262,10 +390,11 @@ public class DeliveryOrdersFragment extends Fragment {
         db.collection("orders").document(order.getOrderId())
                 .update("status", "En cours")
                 .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "🚚 Livraison démarrée", Toast.LENGTH_SHORT).show();
                     loadUserOrders();
                 })
                 .addOnFailureListener(e -> {
-                    showErrorState("Erreur de démarrage: " + e.getMessage());
+                    Toast.makeText(getContext(), "❌ Erreur: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -276,16 +405,17 @@ public class DeliveryOrdersFragment extends Fragment {
                         "deliveryDate", new Date()
                 )
                 .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "✅ Livraison complétée", Toast.LENGTH_SHORT).show();
                     loadUserOrders();
                 })
                 .addOnFailureListener(e -> {
-                    showErrorState("Erreur de livraison: " + e.getMessage());
+                    Toast.makeText(getContext(), "❌ Erreur: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadUserOrders(); // Recharger à chaque retour
+        loadUserOrders();
     }
 }

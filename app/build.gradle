@@ -107,5 +107,6 @@ dependencies {
     // SwipeRefreshLayout
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
+    implementation 'com.google.mlkit:barcode-scanning:17.2.0'
 
 }
