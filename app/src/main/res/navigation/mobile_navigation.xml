@@ -19,7 +19,7 @@
         android:label="@string/employees"
         tools:layout="@layout/consultation" />
 
-    <!-- Commandes (MAINTENANT UN FRAGMENT) -->
+    <!-- Commandes -->
     <fragment
         android:id="@+id/nav_orders"
         android:name="com.example.bestmlawi.ui.orders.Consultation_orders"
@@ -36,15 +36,17 @@
     <!-- Menu -->
     <fragment
         android:id="@+id/nav_menu"
-        android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
+        android:name="com.example.bestmlawi.ui.menu.MenuListFragment"
         android:label="@string/menu"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_menu_list" />
+
 
     <!-- Profil -->
     <fragment
         android:id="@+id/nav_profile"
-        android:name="com.example.bestmlawi.ui.gallery.GalleryFragment"
+        android:name="com.example.bestmlawi.ui.profile.ProfileFragment"
         android:label="@string/profile"
         tools:layout="@layout/fragment_gallery" />
+
 
 </navigation>

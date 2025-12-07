@@ -1,73 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:padding="8dp"
-    android:layout_margin="8dp">
-
-    <!-- Informations de la commande -->
-    <TextView
-        android:id="@+id/txtOrderInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#000000"
-        android:textSize="16sp"
-        android:lineSpacingExtra="4dp"
-        android:paddingBottom="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#F9F9F9"
-        android:padding="12dp"
-        android:elevation="1dp" />
-
-    <!-- Boutons d'action -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="4dp">
-
-        <Button
-            android:id="@+id/btnViewDetail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Detail"
-            android:textColor="#D32F2F"
-            android:backgroundTint="#FFFFFF"
-            android:strokeColor="#D32F2F"
-            android:strokeWidth="2"
-            android:padding="8dp"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Cancel"
-            android:textColor="#000000"
-            android:backgroundTint="#FFFFFF"
-            android:strokeColor="#CCCCCC"
-            android:strokeWidth="2"
-            android:padding="8dp"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/btnAccept"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Accept"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#D32F2F"
-            android:padding="8dp"
-            android:textSize="14sp" />
-
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/bg_round_white_border" android:padding="12dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp">
+    <!--  Ligne 1 : Adresse  -->
+    <TextView android:id="@+id/txtAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Rue de la Paix, Tunis" android:textSize="16sp" android:textStyle="bold" android:textColor="#000000"/>
+    <TextView android:id="@+id/txtTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:58" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="8dp"/>
+    <!--  Ligne 2 : ID + Statut + Heure  -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="6dp">
+        <!--  ID Commande  -->
+        <TextView android:id="@+id/txtOrderId" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="#ABC123" android:textSize="14sp" android:textColor="#D32F2F" android:textStyle="bold"/>
+        <!--  Statut  -->
+        <TextView android:id="@+id/txtStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="En cours" android:textSize="14sp" android:textColor="#FF9800" android:textStyle="bold"/>
+        <!--  Heure  -->
+        <TextView android:id="@+id/txtTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:58" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="8dp"/>
     </LinearLayout>
-
+    <!--  Ligne 3 : Boutons  -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp" android:gravity="start">
+        <Button android:id="@+id/btnViewDetail" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="DETAIL" android:textSize="14sp" android:textColor="#FFFFFF" android:textStyle="bold" android:background="@drawable/btn_gray_rounded" android:layout_marginEnd="8dp"/>
+        <Button android:id="@+id/btnCancel" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="CANCEL" android:textSize="14sp" android:textColor="#FFFFFF" android:textStyle="bold" android:background="@drawable/btn_gray_rounded" android:layout_marginEnd="8dp"/>
+        <Button android:id="@+id/btnAccept" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="ACCEPT" android:textSize="14sp" android:textColor="#FFFFFF" android:textStyle="bold" android:background="@drawable/btn_gray_rounded"/>
+    </LinearLayout>
 </LinearLayout>

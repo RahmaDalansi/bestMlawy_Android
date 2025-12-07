@@ -41,15 +41,4 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="Profile" />
     </group>
-
-    <!-- Separator -->
-    <item android:title="" />
-
-    <!-- Log Out Button -->
-    <item android:title="" />
-
-    <item
-        android:id="@+id/nav_logout"
-        android:icon="@drawable/ic_logout"
-        android:title="Log Out" />
 </menu>

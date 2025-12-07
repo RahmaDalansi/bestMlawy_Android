@@ -1,54 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp"
-    android:background="#FFFFFF"
-    android:layout_marginBottom="4dp">
-
-    <TextView
-        android:id="@+id/txtItemName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nom de l'article"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/txtItemDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Description de l'article"
-        android:textSize="14sp"
-        android:textColor="#666"
-        android:layout_marginTop="4dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="4dp">
-
-        <TextView
-            android:id="@+id/txtItemQuantity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Qté: 1"
-            android:textSize="14sp"
-            android:textColor="#333" />
-
-        <TextView
-            android:id="@+id/txtItemPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10.000 DT"
-            android:textSize="14sp"
-            android:textColor="#1E88E5"
-            android:layout_marginStart="16dp" />
-
-
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp" android:background="#FFFFFF" android:layout_marginBottom="4dp">
+    <!--  Nom de l'article  -->
+    <TextView android:id="@+id/txtItemName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nom de l'article" android:textSize="16sp" android:textStyle="bold" android:textColor="#000000"/>
+    <!--  Description  -->
+    <TextView android:id="@+id/txtItemDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Description de l'article" android:textSize="14sp" android:textColor="#666666" android:layout_marginTop="4dp"/>
+    <!--  Quantité et Prix (alignés à droite)  -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="end" android:layout_marginTop="6dp">
+        <TextView android:id="@+id/txtItemQuantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Qté: 1" android:textSize="14sp" android:textColor="#333333"/>
+        <TextView android:id="@+id/txtItemPrice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10.000 DT" android:textSize="14sp" android:textColor="#1E88E5" android:layout_marginStart="16dp"/>
     </LinearLayout>
-
 </LinearLayout>

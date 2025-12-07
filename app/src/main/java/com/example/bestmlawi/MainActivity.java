@@ -1,14 +1,18 @@
 package com.example.bestmlawi;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -18,9 +22,9 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.bestmlawi.databinding.ActivityMainBinding;
 import com.example.bestmlawi.ui.employee.Consultation;
 import com.example.bestmlawi.ui.orders.Consultation_orders;
+import com.example.bestmlawi.ui.settings.SettingsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private BottomNavigationView bottomNav;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // Check authentication first
         checkAuthentication();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -53,11 +59,36 @@ public class MainActivity extends AppCompatActivity {
             binding.appBarMain.fab.setVisibility(View.GONE);
         }
 
-        DrawerLayout drawer = binding.drawerLayout;
-        NavigationView navigationView = binding.navView;
+        // Initialize NavController
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
 
-        // Configuration de la navigation
+        // Setup navigation (bottom nav + app bar)
         setupNavigation();
+
+        // Set custom NavigationView listener (handles nav_logout manually)
+        binding.navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+
+                if (id == R.id.nav_logout) {
+                    logout();
+                    binding.drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+
+                // Handle other items via Navigation
+                if (NavigationUI.onNavDestinationSelected(item, navController)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        // Update drawer header with real user info
+        updateNavHeader();
 
         // Afficher le Dashboard par défaut
         if (savedInstanceState == null) {
@@ -73,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-
+        // Configuration des destinations de niveau supérieur
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_dashboard,
                 R.id.nav_employee,
@@ -85,27 +115,22 @@ public class MainActivity extends AppCompatActivity {
                 .setOpenableLayout(binding.drawerLayout)
                 .build();
 
+        // Configuration de l'ActionBar avec NavController
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
-        NavigationUI.setupWithNavController(bottomNav, navController);
 
+        // Configuration de BottomNavigationView avec NavController
+        NavigationUI.setupWithNavController(bottomNav, navController);
         bottomNav.setVisibility(View.VISIBLE);
 
-        // PLUS BESOIN DE GÉRER MANUELLEMENT LES CLICKS
+        // Custom bottom nav behavior
         bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            // Seule exception : ouvrir le drawer pour "Menu"
-            if (itemId == R.id.nav_menu) {
+            if (item.getItemId() == R.id.nav_menu) {
                 binding.drawerLayout.openDrawer(binding.navView);
-                return false; // Ne pas sélectionner
+                return false;
             }
-
-            // Pour tous les autres (Fragments), NavigationUI gère automatiquement
             return NavigationUI.onNavDestinationSelected(item, navController);
         });
     }
-
 
     private void showHomeFragment() {
         try {
@@ -121,6 +146,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void updateNavHeader() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        // Get header view from NavigationView
+        View headerView = binding.navView.getHeaderView(0); // usually index 0
+
+        TextView textViewName = headerView.findViewById(R.id.textViewName);
+        TextView textViewEmail = headerView.findViewById(R.id.textViewEmail);
+
+        // Set email (always available if signed in with email)
+        String email = user.getEmail();
+        textViewEmail.setText(email != null ? email : "No email");
+
+        // Set display name (may be null)
+        String displayName = user.getDisplayName();
+        if (displayName != null && !displayName.isEmpty()) {
+            textViewName.setText(displayName);
+        } else {
+            // Fallback: use part of email before '@'
+            if (email != null) {
+                String nameFromEmail = email.substring(0, email.indexOf('@'));
+                textViewName.setText(capitalize(nameFromEmail));
+            } else {
+                textViewName.setText("User");
+            }
+        }
+    }
+
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
 
     private void openEmployeeConsultation() {
         // Vérifier l'authentification avant d'ouvrir Consultation
@@ -144,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Vérifier le rôle dans Firestore (seulement si nécessaire)
+        // Vérifier le rôle dans Firestore
         checkUserRole(currentUser.getUid());
     }
 
@@ -160,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                                 // L'utilisateur n'est pas admin/gerant
                                 Toast.makeText(MainActivity.this,
                                         "Accès réservé aux administrateurs", Toast.LENGTH_LONG).show();
-                                // Vous pouvez choisir de rediriger ou juste montrer un message
+                                // Option: rediriger vers une activité limitée
                             }
                         } else {
                             Toast.makeText(MainActivity.this,
@@ -199,15 +257,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
+        int id = item.getItemId();
 
-        if (itemId == R.id.action_settings) {
-            Toast.makeText(this, "Paramètres", Toast.LENGTH_SHORT).show();
+        if (id == R.id.action_settings) {
+            // Ouvrir l'activité des paramètres
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
-        } else if (itemId == R.id.menu_notifications) {
+        } else if (id == R.id.menu_notifications) {
             showNotifications();
             return true;
-        } else if (itemId == R.id.menu_logout) {
+        } else if (id == R.id.menu_logout) {
             logout();
             return true;
         }

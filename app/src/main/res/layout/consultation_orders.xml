@@ -1,60 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FAFAFA">
+    android:background="#FFFFFF">
 
-    <!-- Barre de titre moderne -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="#C62828"
-        android:paddingHorizontal="22dp"
-        android:gravity="center_vertical"
-        android:elevation="6dp">
-
-        <TextView
-            android:id="@+id/txtTitle"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Orders List"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:letterSpacing="0.05" />
-
-        <ImageView
-            android:id="@+id/imgScanQr"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:src="@drawable/ic_qr_code"
-            android:background="@drawable/bg_icon_circle"
-            android:padding="12dp"
-            android:contentDescription="Scanner un code QR"
-            android:clickable="true"
-            android:focusable="true" />
-    </LinearLayout>
-
-    <!-- Barre de recherche modernisée -->
+    <!-- Barre d'onglets : En cours | Prêt | Livré -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:elevation="3dp"
-        android:padding="12dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/bg_round_white_large">
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/tabEnCours"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:text="En cours"
+            android:textColor="#D32F2F"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/tab_selected_red"
+            android:paddingHorizontal="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/tabPret"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:text="Prêt"
+            android:textColor="#757575"
+            android:textSize="15sp"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:background="@drawable/tab_unselected"
+            android:paddingHorizontal="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/tabLivré"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:text="Livré"
+            android:textColor="#757575"
+            android:textSize="15sp"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:background="@drawable/tab_unselected"
+            android:paddingHorizontal="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Barre de recherche -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:elevation="2dp"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/bg_round_gray_search">
 
         <ImageView
-            android:layout_width="26dp"
-            android:layout_height="26dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_search"
-            android:tint="#9E9E9E"
+            app:tint="#757575"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="10dp"
             android:contentDescription="Search" />
@@ -63,114 +90,63 @@
             android:id="@+id/edtSearch"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="46dp"
-            android:hint="Rechercher par ID..."
+            android:layout_height="40dp"
+            android:hint="Search"
             android:textSize="16sp"
             android:background="@null"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp" />
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textColor="#212121"
+            android:textColorHint="#9E9E9E" />
+
+        <!-- Bouton filtre avec ID txtOpenFilters -->
+        <ImageView
+            android:id="@+id/txtOpenFilters"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_filter_list"
+            android:background="@drawable/bg_round_red_small"
+            android:padding="10dp"
+            android:contentDescription="Filter Orders"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
-    <!-- BARRE DES FILTRES PAR STATUT -->
-    <LinearLayout
-        android:id="@+id/statusFilterContainer"
+    <!-- Ligne Scan QR -->
+    <!-- Bouton Scan QR en pleine largeur -->
+    <Button
+        android:id="@+id/btnScanQr"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:layout_marginBottom="12dp">
-
-        <!-- Bouton Tous -->
-        <Button
-            android:id="@+id/btnFilterAll"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="42dp"
-            android:layout_marginHorizontal="4dp"
-            android:text="Tous"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:background="@drawable/bg_btn_status_all_selected"
-            android:stateListAnimator="@null"
-            android:elevation="2dp" />
-
-        <!-- Bouton En attente -->
-        <Button
-            android:id="@+id/btnFilterPending"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="42dp"
-            android:layout_marginHorizontal="4dp"
-            android:text="cour"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:background="@drawable/bg_btn_status_pending"
-            android:stateListAnimator="@null"
-            android:elevation="2dp" />
-
-        <!-- Bouton Prêt -->
-        <Button
-            android:id="@+id/btnFilterReady"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="42dp"
-            android:layout_marginHorizontal="4dp"
-            android:text="Prêt"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:background="@drawable/bg_btn_status_ready"
-            android:stateListAnimator="@null"
-            android:elevation="2dp" />
-
-        <!-- Bouton Livré -->
-        <Button
-            android:id="@+id/btnFilterDelivered"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="42dp"
-            android:layout_marginHorizontal="4dp"
-            android:text="Livré"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:background="@drawable/bg_btn_status_delivered"
-            android:stateListAnimator="@null"
-            android:elevation="2dp" />
-    </LinearLayout>
-
-    <!-- Lien filtres avancés -->
-    <TextView
-        android:id="@+id/txtOpenFilters"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Filtres avancés"
-        android:textColor="#C62828"
-        android:textSize="14sp"
-        android:background="@drawable/bg_round_gray_light"
-        android:layout_marginEnd="22dp"
-        android:layout_marginBottom="12dp"
-        android:layout_gravity="end"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:elevation="2dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/bg_round_red_small"
+        android:text="Scanner un QR Code"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:drawableStart="@drawable/ic_qr_code"
+        android:drawablePadding="12dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:contentDescription="Scanner un code QR" />
 
-    <!-- Liste des commandes modernisée -->
+    <!-- Liste des commandes -->
     <ListView
         android:id="@+id/lstOrders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        android:padding="8dp"
-        android:layout_margin="20dp"
-        android:background="@drawable/bg_round_white_large"
-        android:clipToPadding="false"
-        android:elevation="2dp"
-        android:scrollbars="none" />
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="0.5dp"
+        android:scrollbars="vertical" />
 
 </LinearLayout>

@@ -10,13 +10,15 @@ public class Order {
     private String address;            // Adresse du client
     private Date orderDate;            // Date de la commande
     private String deliverId;           // ID du chauffeur
-    private double totalAmount;        // 🔥 Montant total de la commande
+    private double total;        // 🔥 Montant total de la commande
+
+
 
     public Order() {}
 
-    // ✅ Constructeur mis à jour avec totalAmount
+    // ✅ Constructeur mis à jour avec total
     public Order(String id, String user_id, String sales_point_id, String status,
-                 String address, Date orderDate, String driverId, double totalAmount) {
+                 String address, Date orderDate, String driverId, double total) {
         this.id = id;
         this.user_id = user_id;
         this.sales_point_id = sales_point_id;
@@ -24,7 +26,7 @@ public class Order {
         this.address = address;
         this.orderDate = orderDate;
         this.deliverId = driverId;
-        this.totalAmount = totalAmount;
+        this.total = total;
     }
 
     // --- Getters ---
@@ -35,7 +37,7 @@ public class Order {
     public String getAddress() { return address; }
     public Date getOrderDate() { return orderDate; }
     public String getDeliverId() { return deliverId; }
-    public double getTotalAmount() { return totalAmount; }  // ✅ Getter ajouté
+    public double gettotal() { return total; }  // ✅ Getter ajouté
 
     // --- Setters ---
     public void setId(String id) { this.id = id; }
@@ -45,5 +47,19 @@ public class Order {
     public void setAddress(String address) { this.address = address; }
     public void setOrderDate(Date orderDate) { this.orderDate = orderDate; }
     public void setDeliverId(String deliverId) { this.deliverId = deliverId; }
-    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; } // ✅ Setter ajouté
+    public void settotal(double total) { this.total = total; } // ✅ Setter ajouté
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id='" + id + '\'' +
+                ", user_id='" + user_id + '\'' +
+                ", sales_point_id='" + sales_point_id + '\'' +
+                ", status='" + status + '\'' +
+                ", address='" + address + '\'' +
+                ", orderDate=" + orderDate +
+                ", deliverId='" + deliverId + '\'' +
+                ", total=" + total +
+                '}';
+    }
 }

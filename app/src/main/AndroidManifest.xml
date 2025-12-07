@@ -4,14 +4,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Pour Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Pour les versions antérieures à Android 13 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- Pour Android 13+ -->
-
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -37,10 +37,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBGw9LoAOn4JfTequORtYOEosT_ZiQ_s3c" />
-
-        <meta-data
-        android:name="com.google.android.gms.version"
-        android:value="@integer/google_play_services_version" />
 
         <!-- ML Kit Barcode Scanner -->
         <meta-data
@@ -124,6 +120,23 @@
         <activity
             android:name=".ui.salespoints.SalesPointDetailsActivity"
             android:exported="false" />
+
+        <!-- Menu Activities -->
+        <activity
+            android:name=".ui.menu.AddMenuActivity"
+            android:exported="false"
+            android:label="Add Menu Item" />
+
+        <activity
+            android:name=".ui.menu.EditMenuActivity"
+            android:exported="false"
+            android:label="Edit Menu Item" />
+
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:label="Settings"
+            android:exported="false"
+            android:theme="@style/Theme.BestMlewi" />
 
     </application>
 

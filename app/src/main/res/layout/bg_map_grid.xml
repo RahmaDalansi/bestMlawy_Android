@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="400dp"
+        android:height="400dp"
+        android:viewportWidth="400"
+        android:viewportHeight="400">
+        <path
+            android:pathData="M0,0 L400,0 L400,400 L0,400 Z"
+            android:strokeColor="#334155"
+            android:strokeWidth="1"/>
+        <path
+            android:pathData="M20,0 L20,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M40,0 L40,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M60,0 L60,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M80,0 L80,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M100,0 L100,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M120,0 L120,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M140,0 L140,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M160,0 L160,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M180,0 L180,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M200,0 L200,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M220,0 L220,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M240,0 L240,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M260,0 L260,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M280,0 L280,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M300,0 L300,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M320,0 L320,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M340,0 L340,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M360,0 L360,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M380,0 L380,400"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,20 L400,20"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,40 L400,40"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,60 L400,60"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,80 L400,80"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,100 L400,100"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,120 L400,120"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,140 L400,140"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,160 L400,160"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,180 L400,180"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,200 L400,200"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,220 L400,220"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,240 L400,240"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,260 L400,260"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,280 L400,280"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,300 L400,300"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,320 L400,320"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,340 L400,340"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,360 L400,360"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+        <path
+            android:pathData="M0,380 L400,380"
+            android:strokeColor="#334155"
+            android:strokeWidth="0.5"/>
+    </vector>
+</androidx.constraintlayout.widget.ConstraintLayout>

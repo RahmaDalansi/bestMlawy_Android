@@ -103,4 +103,22 @@
     <color name="colorPrimaryDark">#800202</color>
 
 
+    <!-- Couleurs pour les menus -->
+    <color name="red">#D32F2F</color>
+
+    <!-- Dark theme colors -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_text_secondary">#B0B0B0</color>
+    <color name="dark_card">#2D2D2D</color>
+
+
+
+    <color name="red_background">#D32F2F</color>
+    <color name="orange_status">#F57C00</color>   <!-- Orange vif -->
+    <color name="green_status">#388E3C</color>    <!-- Vert foncé (prêt) -->
+    <color name="blue_status">#1976D2</color>     <!-- Bleu (livré) -->
+    <color name="gray_status">#757575</color>     <!-- Gris pour autres statuts -->
+
+
 </resources>

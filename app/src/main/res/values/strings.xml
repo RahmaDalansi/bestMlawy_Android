@@ -19,4 +19,12 @@
     <string name="menu">Menu</string>
 
     <string name="select_sales_point">Sélectionnez un point de vente</string>
+
+    <!-- Language options for spinner -->
+    <string-array name="languages_array">
+        <item>English</item>
+        <item>French</item>
+        <item>Arabic</item>
+    </string-array>
+
 </resources>

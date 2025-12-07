@@ -4,11 +4,9 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,22 +22,35 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import android.util.Log;
 
 public class Consultation_orders extends Fragment {
 
-    private ImageView QRcodeImage;
+    // 🔹 Constantes pour les statuts (éviter les fautes de frappe)
+    private static final String STATUS_EN_COURS = "En cours";
+    private static final String STATUS_PRET = "Prêt";
+    private static final String STATUS_LIVRE = "Livré";
+
+    private Button btnScanQr;
     private ListView lstOrders;
-    private TextView txtTitle, txtOpenFilters;
+    private ImageView txtOpenFilters;
+    private TextView tabEnCours, tabPret, tabLivré;
+
     private EditText edtSearch;
-    private Button btnFilterAll, btnFilterPending, btnFilterReady, btnFilterDelivered;
     private boolean isScanning = false;
 
     private ArrayAdapter<String> adpOrders;
@@ -59,6 +70,30 @@ public class Consultation_orders extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.consultation_orders, container, false);
         initialiser(root);
+
+        // ✅ Initialisation du statut par défaut avec constante
+        selectTab(STATUS_EN_COURS);
+        this.selectedStatus = STATUS_EN_COURS;
+
+        // ✅ Déplacer ici les listeners des onglets (hors de getView !)
+        tabEnCours.setOnClickListener(v -> {
+            selectTab(STATUS_EN_COURS);
+            selectedStatus = STATUS_EN_COURS;
+            filtrerOrders();
+        });
+
+        tabPret.setOnClickListener(v -> {
+            selectTab(STATUS_PRET);
+            selectedStatus = STATUS_PRET;
+            filtrerOrders();
+        });
+
+        tabLivré.setOnClickListener(v -> {
+            selectTab(STATUS_LIVRE);
+            selectedStatus = STATUS_LIVRE;
+            filtrerOrders();
+        });
+
         setupListeners();
         remplir();
         setupSearchListener();
@@ -68,16 +103,12 @@ public class Consultation_orders extends Fragment {
 
     private void initialiser(View root) {
         lstOrders = root.findViewById(R.id.lstOrders);
-        txtTitle = root.findViewById(R.id.txtTitle);
-        txtOpenFilters = root.findViewById(R.id.txtOpenFilters);
         edtSearch = root.findViewById(R.id.edtSearch);
-        QRcodeImage = root.findViewById(R.id.imgScanQr);
-
-        // Initialiser les boutons de filtre
-        btnFilterAll = root.findViewById(R.id.btnFilterAll);
-        btnFilterPending = root.findViewById(R.id.btnFilterPending);
-        btnFilterReady = root.findViewById(R.id.btnFilterReady);
-        btnFilterDelivered = root.findViewById(R.id.btnFilterDelivered);
+        btnScanQr = root.findViewById(R.id.btnScanQr);
+        txtOpenFilters = root.findViewById(R.id.txtOpenFilters);
+        tabEnCours = root.findViewById(R.id.tabEnCours);
+        tabPret = root.findViewById(R.id.tabPret);
+        tabLivré = root.findViewById(R.id.tabLivré);
 
         orderStringList = new ArrayList<>();
         adpOrders = new ArrayAdapter<>(requireContext(), 0, orderStringList) {
@@ -88,14 +119,6 @@ public class Consultation_orders extends Fragment {
                     convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_order, parent, false);
                 }
 
-                String item = getItem(position);
-                TextView txtOrderInfo = convertView.findViewById(R.id.txtOrderInfo);
-                Button btnViewDetail = convertView.findViewById(R.id.btnViewDetail);
-                Button btnCancel = convertView.findViewById(R.id.btnCancel);
-                Button btnAccept = convertView.findViewById(R.id.btnAccept);
-
-                txtOrderInfo.setText(item);
-
                 final Order order;
                 if (position < orderList.size()) {
                     order = orderList.get(position);
@@ -103,30 +126,102 @@ public class Consultation_orders extends Fragment {
                     order = null;
                 }
 
-                btnViewDetail.setOnClickListener(v -> {
-                    if (order != null) showOrderDialog(order);
-                });
+                TextView txtAddress = convertView.findViewById(R.id.txtAddress);
+                TextView txtOrderId = convertView.findViewById(R.id.txtOrderId);
+                TextView txtStatus = convertView.findViewById(R.id.txtStatus);
+                TextView txtTime = convertView.findViewById(R.id.txtTime);
+                TextView txtTotal = convertView.findViewById(R.id.txtTotal);
 
-                btnCancel.setOnClickListener(v -> {
-                    if (order != null && !"Livré".equals(order.getStatus())) {
-                        showDeleteConfirmationDialog(order);
+
+                if (order != null) {
+                    // 🔒 Sécurité contre null
+                    String address = order.getAddress();
+                    String customerName = "Client";
+                    if (address != null && !address.trim().isEmpty()) {
+                        String[] parts = address.split(",");
+                        customerName = parts[0].trim();
+                    }
+                    txtAddress.setText(order.getAddress() != null ? order.getAddress() : "Adresse inconnue");
+                    txtOrderId.setText("#" + order.getId());
+                    txtStatus.setText(selectedStatus);
+                    txtTotal.setText( String.valueOf(order.gettotal()));
+
+                    int statusColor;
+                    String status = selectedStatus;
+                    if (status != null && status.equalsIgnoreCase(STATUS_EN_COURS)) {
+                        statusColor = ContextCompat.getColor(requireContext(), R.color.orange_status);
+                    } else if (status != null && status.equalsIgnoreCase(STATUS_PRET)) {
+                        statusColor = ContextCompat.getColor(requireContext(), R.color.green_status);
+                    } else if (status != null && status.equalsIgnoreCase(STATUS_LIVRE)) {
+                        statusColor = ContextCompat.getColor(requireContext(), R.color.blue_status);
+                    } else {
+                        statusColor = ContextCompat.getColor(requireContext(), R.color.gray_status);
+                    }
+                    txtStatus.setTextColor(statusColor);
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.FRANCE);
+                    txtTime.setText(order.getOrderDate() != null ? sdf.format(order.getOrderDate()) : "--:--");
+                    txtOrderId.setText("#" + order.getId());
+                }
+
+                Button btnViewDetail = convertView.findViewById(R.id.btnViewDetail);
+                btnViewDetail.setOnClickListener(v -> {
+                    if (order != null) {
+                        showOrderDialog(order);
+                    } else {
+                        Toast.makeText(requireContext(), "Commande non disponible", Toast.LENGTH_SHORT).show();
                     }
                 });
 
+                Button btnCancel = convertView.findViewById(R.id.btnCancel);
+                btnCancel.setOnClickListener(v -> {
+                    if (order != null) {
+                        if (!STATUS_LIVRE.equalsIgnoreCase(order.getStatus())) {
+                            showDeleteConfirmationDialog(order);
+                        } else {
+                            Toast.makeText(requireContext(), "Impossible d'annuler une commande livrée", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                Button btnAccept = convertView.findViewById(R.id.btnAccept);
                 btnAccept.setOnClickListener(v -> {
                     if (order != null) {
                         Intent intent = new Intent(requireActivity(), AssignOrderActivity.class);
                         intent.putExtra("ORDER_ID", order.getId());
                         intent.putExtra("DOCUMENT_ID", order.getId());
                         startActivityForResult(intent, 1001);
+                    } else {
+                        Toast.makeText(requireContext(), "Erreur : commande introuvable", Toast.LENGTH_SHORT).show();
                     }
                 });
 
+                // ❌ NE PLUS METTRE LES LISTENERS DES ONGLETS ICI !
                 return convertView;
             }
         };
         lstOrders.setAdapter(adpOrders);
         db = FirebaseFirestore.getInstance();
+    }
+
+    private void selectTab(String tabName) {
+        tabEnCours.setTextColor(0xFF757575);
+        tabPret.setTextColor(0xFF757575);
+        tabLivré.setTextColor(0xFF757575);
+
+        tabEnCours.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tab_unselected));
+        tabPret.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tab_unselected));
+        tabLivré.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tab_unselected));
+
+        TextView selectedTab = null;
+        if (STATUS_EN_COURS.equals(tabName)) selectedTab = tabEnCours;
+        else if (STATUS_PRET.equals(tabName)) selectedTab = tabPret;
+        else if (STATUS_LIVRE.equals(tabName)) selectedTab = tabLivré;
+
+        if (selectedTab != null) {
+            selectedTab.setTextColor(0xFFD32F2F);
+            selectedTab.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tab_selected_red));
+        }
     }
 
     private void setupListeners() {
@@ -135,57 +230,7 @@ public class Consultation_orders extends Fragment {
             startActivityForResult(intent, 1002);
         });
 
-        QRcodeImage.setOnClickListener(v -> {
-            onScanQRCode();
-        });
-
-        // Configurer les listeners pour les filtres de statut
-        setupStatusFilterListeners();
-    }
-
-    private void setupStatusFilterListeners() {
-        View.OnClickListener statusClickListener = v -> {
-            resetAllFilterButtons();
-
-            if (v == btnFilterAll) {
-                selectedStatus = "";
-                btnFilterAll.setBackgroundResource(R.drawable.bg_btn_status_all_selected);
-                btnFilterAll.setTextColor(Color.WHITE);
-            } else if (v == btnFilterPending) {
-                selectedStatus = "En cours";
-                btnFilterPending.setBackgroundResource(R.drawable.bg_btn_status_selected);
-                btnFilterPending.setTextColor(Color.WHITE);
-            } else if (v == btnFilterReady) {
-                selectedStatus = "Prêt";
-                btnFilterReady.setBackgroundResource(R.drawable.bg_btn_status_selected);
-                btnFilterReady.setTextColor(Color.WHITE);
-            } else if (v == btnFilterDelivered) {
-                selectedStatus = "Livré";
-                btnFilterDelivered.setBackgroundResource(R.drawable.bg_btn_status_selected);
-                btnFilterDelivered.setTextColor(Color.WHITE);
-            }
-
-            filtrerOrders();
-        };
-
-        btnFilterAll.setOnClickListener(statusClickListener);
-        btnFilterPending.setOnClickListener(statusClickListener);
-        btnFilterReady.setOnClickListener(statusClickListener);
-        btnFilterDelivered.setOnClickListener(statusClickListener);
-    }
-
-    private void resetAllFilterButtons() {
-        // Réinitialiser tous les boutons à leur état normal
-        btnFilterAll.setBackgroundResource(R.drawable.bg_btn_status_all);
-        btnFilterPending.setBackgroundResource(R.drawable.bg_btn_status_pending);
-        btnFilterReady.setBackgroundResource(R.drawable.bg_btn_status_ready);
-        btnFilterDelivered.setBackgroundResource(R.drawable.bg_btn_status_delivered);
-
-        btnFilterAll.setTextColor(Color.WHITE);
-        btnFilterPending.setTextColor(Color.WHITE);
-        btnFilterReady.setTextColor(Color.WHITE);
-        btnFilterDelivered.setTextColor(Color.WHITE);
-    }
+        btnScanQr.setOnClickListener(v -> onScanQRCode());    }
 
     private void setupSearchListener() {
         edtSearch.addTextChangedListener(new TextWatcher() {
@@ -203,16 +248,13 @@ public class Consultation_orders extends Fragment {
     }
 
     private void fetchMenuItemForOrderLineItem(OrderLineItem item) {
-        if (item == null || item.getMenuItemId() == "" || item.getId() == null) {
+        if (item == null || item.getMenuItemId() == null || item.getId() == null) {
             Log.w("Consultation_orders", "Invalid OrderLineItem: " + item);
-            if (item != null && item.getId() != null) {
-                menuItemsDetail.put(item.getId(), null);
-            }
+            if (item != null) menuItemsDetail.put(item.getId(), null);
             return;
         }
 
         String menuItemIdStr = String.valueOf(item.getMenuItemId());
-
         db.collection("menu_items")
                 .document(menuItemIdStr)
                 .get()
@@ -232,29 +274,17 @@ public class Consultation_orders extends Fragment {
                                     String description = safeString(data.get("description"), "");
                                     String ingredients = safeString(data.get("ingredients"), "");
 
-                                    menuItem = new MenuItem(
-                                            doc.getId(),
-                                            name,
-                                            price,
-                                            imageUrl,
-                                            category,
-                                            rating,
-                                            description,
-                                            ingredients
-                                    );
+                                    menuItem = new MenuItem(doc.getId(), name, price, imageUrl, category, rating, description, ingredients);
                                 }
                             } catch (Exception e) {
                                 Log.e("Consultation_orders", "Erreur création MenuItem ID: " + menuItemIdStr, e);
                             }
-                        } else {
-                            Log.w("Consultation_orders", "Plat non trouvé: " + menuItemIdStr);
                         }
                     } else {
                         Log.e("Consultation_orders", "Erreur Firestore pour plat: " + menuItemIdStr, task.getException());
                     }
 
                     menuItemsDetail.put(item.getId(), menuItem);
-
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
                             if (orderItemsAdapter != null) {
@@ -287,7 +317,7 @@ public class Consultation_orders extends Fragment {
 
         TextView txtOrderId = dialogView.findViewById(R.id.txtDialogOrderId);
         TextView txtCustomerName = dialogView.findViewById(R.id.txtDialogCustomerName);
-        TextView txtTotalAmount = dialogView.findViewById(R.id.txtDialogTotalAmount);
+        TextView txttotal = dialogView.findViewById(R.id.txtDialogtotal);
         TextView txtStatus = dialogView.findViewById(R.id.txtDialogStatus);
         TextView txtTimestamp = dialogView.findViewById(R.id.txtDialogTimestamp);
         Button btnMarkReady = dialogView.findViewById(R.id.btnMarkReady);
@@ -295,10 +325,11 @@ public class Consultation_orders extends Fragment {
         Button btnDelete = dialogView.findViewById(R.id.btnDeleteOrder);
         ListView lstOrderItems = dialogView.findViewById(R.id.lstOrderItems);
 
+
         txtOrderId.setText("Commande #" + order.getId());
-        txtCustomerName.setText(order.getAddress());
-        txtTotalAmount.setText("N/A");
-        txtStatus.setText(order.getStatus());
+        txtCustomerName.setText(order.getAddress() != null ? order.getAddress() : "Adresse inconnue");
+        txttotal.setText("N/A");
+        txtStatus.setText(order.getStatus() != null ? order.getStatus() : "Statut inconnu");
 
         if (order.getOrderDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
@@ -309,33 +340,27 @@ public class Consultation_orders extends Fragment {
 
         loadOrderItems(order.getId(), lstOrderItems);
 
-        boolean isDelivered = "Livré".equals(order.getStatus()) || "Delivered".equals(order.getStatus());
-        boolean isReady = "Prêt".equals(order.getStatus()) || "Ready".equals(order.getStatus());
+        boolean isDelivered = STATUS_LIVRE.equalsIgnoreCase(order.getStatus());
+        boolean isReady = STATUS_PRET.equalsIgnoreCase(order.getStatus());
 
-        if (isDelivered) {
-            btnMarkReady.setEnabled(false);
-            btnMarkDelivered.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } else if (isReady) {
-            btnMarkReady.setEnabled(false);
-            btnMarkDelivered.setVisibility(View.VISIBLE);
-            btnMarkDelivered.setEnabled(true);
-        } else {
-            btnMarkReady.setVisibility(View.VISIBLE);
-            btnMarkDelivered.setVisibility(View.GONE);
-        }
+        btnMarkReady.setEnabled(!isReady && !isDelivered);
+        btnMarkDelivered.setEnabled(isReady && !isDelivered);
+        btnDelete.setEnabled(!isDelivered);
+
+        btnMarkReady.setVisibility(isReady || isDelivered ? View.GONE : View.VISIBLE);
+        btnMarkDelivered.setVisibility(isReady && !isDelivered ? View.VISIBLE : View.GONE);
 
         AlertDialog dialog = builder.create();
         dialog.show();
 
         btnMarkReady.setOnClickListener(v -> {
             dialog.dismiss();
-            updateOrderStatus(order, "Prêt");
+            updateOrderStatus(order, STATUS_PRET);
         });
 
         btnMarkDelivered.setOnClickListener(v -> {
             dialog.dismiss();
-            updateOrderStatus(order, "Livré");
+            updateOrderStatus(order, STATUS_LIVRE);
         });
 
         btnDelete.setOnClickListener(v -> {
@@ -345,8 +370,6 @@ public class Consultation_orders extends Fragment {
     }
 
     private void loadOrderItems(String orderId, ListView listView) {
-        Log.d("Consultation_orders", "Chargement des articles pour orderId = " + orderId);
-
         List<OrderLineItem> items = new ArrayList<>();
 
         db.collection("order_line_items")
@@ -382,7 +405,7 @@ public class Consultation_orders extends Fragment {
                                 if (menuItem != null) {
                                     txtItemName.setText(menuItem.getName());
                                     txtItemDescription.setText(menuItem.getDescription());
-                                    txtItemPrice.setText(String.format(Locale.FRANCE, "%.2f DT", menuItem.getPrice()));
+                                    txtItemPrice.setText(String.format(Locale.FRANCE, "%.2f €", menuItem.getPrice()));
                                 } else {
                                     txtItemName.setText("Chargement...");
                                 }
@@ -452,9 +475,8 @@ public class Consultation_orders extends Fragment {
     }
 
     private void remplir() {
-        // Charger les commandes triées par date (la plus récente d'abord)
         db.collection("orders")
-                .orderBy("orderDate", Query.Direction.DESCENDING) // Tri par date décroissante
+                .orderBy("orderDate", Query.Direction.DESCENDING)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -462,30 +484,18 @@ public class Consultation_orders extends Fragment {
                         orderStringList.clear();
 
                         for (QueryDocumentSnapshot doc : task.getResult()) {
-                            Order order = doc.toObject(Order.class);
-                            order.setId(doc.getId());
-
-                            // Gérer le champ date si nécessaire
-                            if (order.getOrderDate() == null) {
-                                Object dateObj = doc.get("orderDate");
-                                if (dateObj instanceof com.google.firebase.Timestamp) {
-                                    order.setOrderDate(((com.google.firebase.Timestamp) dateObj).toDate());
-                                } else if (dateObj instanceof Date) {
-                                    order.setOrderDate((Date) dateObj);
-                                } else if (dateObj instanceof String) {
-                                    try {
-                                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.FRANCE);
-                                        order.setOrderDate(sdf.parse((String) dateObj));
-                                    } catch (ParseException e) {
-                                        order.setOrderDate(new Date()); // Date par défaut
-                                    }
-                                }
+                            try {
+                                Order order = doc.toObject(Order.class);
+                                order.setId(doc.getId());
+                                order.setStatus(doc.getString("status"));
+                                System.out.println("order.getStatus(): " + order.getStatus());
+                                orderList.add(order);
+                                System.out.println("order: " + order);
+                            } catch (Exception e) {
+                                Log.e("Consultation_orders", "Erreur conversion Order ID: " + doc.getId(), e);
                             }
-
-                            orderList.add(order);
                         }
 
-                        // Filtrer et afficher
                         filtrerOrders();
                     } else {
                         Toast.makeText(requireContext(),
@@ -497,84 +507,68 @@ public class Consultation_orders extends Fragment {
 
     private void filtrerOrders() {
         String searchText = edtSearch.getText().toString().toLowerCase().trim();
-
-        orderStringList.clear();
-
-        // Créer une liste temporaire pour trier
         List<Order> filteredOrders = new ArrayList<>();
+        orderStringList.clear();
+        orderList.clear();
+        db.collection("orders")
+                .whereEqualTo("status", selectedStatus)
+                .orderBy("orderDate", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        orderList.clear();
+                        orderStringList.clear();
 
-        for (Order order : orderList) {
-            boolean matchesSearch = searchText.isEmpty() ||
-                    order.getId().toLowerCase().contains(searchText) ||
-                    (order.getAddress() != null && order.getAddress().toLowerCase().contains(searchText)) ||
-                    (order.getStatus() != null && order.getStatus().toLowerCase().contains(searchText));
+                        for (QueryDocumentSnapshot doc : task.getResult()) {
+                            try {
+                                Order order = doc.toObject(Order.class);
+                                order.setId(doc.getId());
+                                order.setStatus(doc.getString("status"));
+                                System.out.println("order.getStatus(): " + order.getStatus());
+                                orderList.add(order);
+                            } catch (Exception e) {
+                                Log.e("Consultation_orders", "Erreur conversion Order ID: " + doc.getId(), e);
+                            }
+                        }
 
-            boolean matchesStatus = selectedStatus.isEmpty() ||
-                    (order.getStatus() != null && order.getStatus().equals(selectedStatus));
+                        for (Order order : orderList) {
+                            boolean matchesSearch = searchText.isEmpty() ||
+                                    order.getId().toLowerCase().contains(searchText) ||
+                                    (order.getAddress() != null && order.getAddress().toLowerCase().contains(searchText));
 
-            boolean matchesSalesPoint = selectedSalesPoint.isEmpty() ||
-                    (order.getSales_point_id() != null &&
-                            order.getSales_point_id().contains(selectedSalesPoint));
 
-            if (matchesSearch && matchesStatus && matchesSalesPoint) {
-                filteredOrders.add(order);
-            }
-        }
 
-        // Trier les commandes filtrées par date (déjà trié dans remplir(), mais on conserve l'ordre)
-        Collections.sort(filteredOrders, new Comparator<Order>() {
-            @Override
-            public int compare(Order o1, Order o2) {
-                Date date1 = o1.getOrderDate() != null ? o1.getOrderDate() : new Date(0);
-                Date date2 = o2.getOrderDate() != null ? o2.getOrderDate() : new Date(0);
-                return date2.compareTo(date1); // Décroissant (plus récent en premier)
-            }
-        });
 
-        // Formater l'affichage
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.FRANCE);
 
-        for (Order order : filteredOrders) {
-            String displayText = "Cmd #" + order.getId();
+                            boolean matchesSalesPoint = selectedSalesPoint.isEmpty() ||
+                                    (order.getSales_point_id() != null &&
+                                            order.getSales_point_id().contains(selectedSalesPoint));
 
-            if (order.getAddress() != null) {
-                displayText += " - " + order.getAddress();
-            }
+                            if (matchesSearch  && matchesSalesPoint) {
+                                String displayText = "Cmd #" + order.getId() +
+                                        " - " + (order.getAddress() != null ? order.getAddress() : "Adresse inconnue") +
+                                        " (" + (order.getStatus() != null ? selectedStatus : "Inconnu") + ")";
+                                if (order.getOrderDate() != null) {
+                                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.FRANCE);
+                                    displayText += " • " + sdf.format(order.getOrderDate());
+                                }
+                                filteredOrders.add(order);
+                                orderStringList.add(displayText);
+                            }
+                        }
 
-            if (order.getStatus() != null) {
-                displayText += " (" + order.getStatus() + ")";
-            }
 
-            if (order.getOrderDate() != null) {
-                // Afficher la date complète si c'est aujourd'hui, sinon juste l'heure
-                Date now = new Date();
-                SimpleDateFormat dayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE);
-                String today = dayFormat.format(now);
-                String orderDay = dayFormat.format(order.getOrderDate());
+                        adpOrders.notifyDataSetChanged();
 
-                if (today.equals(orderDay)) {
-                    displayText += " • " + timeFormat.format(order.getOrderDate());
-                } else {
-                    displayText += " • " + dateFormat.format(order.getOrderDate());
-                }
-            }
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "Erreur Firebase: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                        System.out.println("Erreur Firebase: " + task.getException().getMessage());
+                    }
+                });
 
-            orderStringList.add(displayText);
-        }
 
-        adpOrders.notifyDataSetChanged();
-
-        // Mettre à jour le titre avec le nombre de résultats
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> {
-                if (selectedStatus.isEmpty()) {
-                    txtTitle.setText("Orders List (" + filteredOrders.size() + ")");
-                } else {
-                    txtTitle.setText(selectedStatus + " (" + filteredOrders.size() + ")");
-                }
-            });
-        }
     }
 
     @Override
@@ -587,27 +581,11 @@ public class Consultation_orders extends Fragment {
                 Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
             }
             remplir();
-        }
-
-        else if (requestCode == 1002 && resultCode == getActivity().RESULT_OK && data != null) {
+        } else if (requestCode == 1002 && resultCode == getActivity().RESULT_OK && data != null) {
             selectedStatus = data.getStringExtra("FILTER_STATUS") != null ?
                     data.getStringExtra("FILTER_STATUS") : "";
-
             selectedSalesPoint = data.getStringExtra("FILTER_SALES_POINT_FILTER") != null ?
                     data.getStringExtra("FILTER_SALES_POINT_FILTER") : "";
-
-            // Réinitialiser les boutons de filtre si on utilise les filtres avancés
-            resetAllFilterButtons();
-            if (selectedStatus.isEmpty()) {
-                btnFilterAll.setBackgroundResource(R.drawable.bg_btn_status_all_selected);
-            } else if ("En attente".equals(selectedStatus)) {
-                btnFilterPending.setBackgroundResource(R.drawable.bg_btn_status_selected);
-            } else if ("Prêt".equals(selectedStatus)) {
-                btnFilterReady.setBackgroundResource(R.drawable.bg_btn_status_selected);
-            } else if ("Livré".equals(selectedStatus)) {
-                btnFilterDelivered.setBackgroundResource(R.drawable.bg_btn_status_selected);
-            }
-
             filtrerOrders();
         }
     }
@@ -626,30 +604,23 @@ public class Consultation_orders extends Fragment {
     private void scanQrCode() {
         scanner.startScan()
                 .addOnSuccessListener(barcode -> {
-                    if (barcode == null) {
-                        Toast.makeText(getContext(), "Aucun code détecté", Toast.LENGTH_SHORT).show();
-                        isScanning = false;
+                    if (barcode == null || barcode.getRawValue() == null) {
+                        Toast.makeText(getContext(), "Aucun code détecté ou vide", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    String rawValue = barcode.getRawValue();
-                    if (rawValue == null || rawValue.trim().isEmpty()) {
-                        Toast.makeText(getContext(), "Code vide ou invalide", Toast.LENGTH_SHORT).show();
-                        isScanning = false;
+                    String rawValue = barcode.getRawValue().trim();
+                    if (rawValue.isEmpty()) {
+                        Toast.makeText(getContext(), "Code invalide", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("status", "Livré");
-                    db.collection("orders").document(rawValue).update(data)
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(getContext(), "✅ Commande marquée comme livrée", Toast.LENGTH_LONG).show();
-                                remplir(); // Actualiser la liste
-                            })
+                    db.collection("orders").document(rawValue)
+                            .update("status", STATUS_LIVRE)
+                            .addOnSuccessListener(aVoid ->
+                                    Toast.makeText(getContext(), "✅ Commande marquée comme livrée", Toast.LENGTH_LONG).show())
                             .addOnFailureListener(e ->
                                     Toast.makeText(getContext(), "Erreur mise à jour : " + e.getMessage(), Toast.LENGTH_SHORT).show());
-
-                    isScanning = false;
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Scan échoué : " + e.getMessage(), Toast.LENGTH_SHORT).show();
